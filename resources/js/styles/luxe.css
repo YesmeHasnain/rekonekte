@@ -1,0 +1,195 @@
+/* =====================================================================
+   Rekonekte — luxury pass (client brief, 22 Oct 2026)
+   Palette from the client's brand boards: Deep Navy, Royal Blue,
+   Champagne Gold, Ivory, Charcoal — Haitian red kept only as a small
+   accent (it lives in the logo). Elegant serif display + a refined sans.
+   Loaded last, so it re-tones heart.css / base.css without rewriting them.
+   ===================================================================== */
+:root {
+  --navy: #0B1E3B;
+  --navy-2: #12295A;
+  --royal: #1E3A8A;
+  --gold: #C9A24A;
+  --gold-2: #E3C77A;
+  --gold-deep: #A8832F;
+  --ivory: #F8F6EF;
+  --ivory-2: #F1ECE0;
+  --charcoal: #1F2937;
+
+  /* re-point the shared tokens the whole site (and app) reads */
+  --blue: #1E3A8A;
+  --blue-600: #17306f;
+  --blue-50: #EEF1F8;
+  --blue-100: #DCE2F0;
+  --night: #0B1E3B;
+  --sun: #C9A24A;
+  --sun-50: #F7F0DC;
+  --red: #C8102E;
+  --text: #0B1E3B;
+  --bg: #F8F6EF;
+  --paper: #F8F6EF;
+  --paper-2: #F1ECE0;
+  --ink: #0B1E3B;
+  --ink-2: #3E4A63;
+  --f-head: 'Cormorant Garamond', 'Times New Roman', serif;
+  --f-ui: 'Jost', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --gold-grad: linear-gradient(135deg, #E3C77A 0%, #C9A24A 45%, #A8832F 100%);
+}
+
+body { font-family: var(--f-ui); }
+
+/* ---------- logo ---------- */
+.logo { gap: 0; }
+.logo img { height: 40px; width: auto; }
+.logo-sm img { height: 32px; }
+.public .logo img { height: 44px; }
+.foot .logo img { height: 46px; }
+
+/* ---------- type ---------- */
+.public h1, .public h2, .public h3 { font-family: var(--f-head); font-weight: 600; letter-spacing: -.01em; }
+.public h2 { font-size: clamp(38px, 4.8vw, 64px); line-height: 1.02; }
+.public h2 em, .public h1 em { font-style: italic; font-weight: 500; color: var(--gold-deep); }
+.h-hero h1 { font-size: clamp(46px, 6.4vw, 92px); line-height: .98; letter-spacing: -.015em; font-weight: 600; }
+.h-hero h1 .soft { color: var(--royal); font-style: italic; font-weight: 500; }
+.h-lead, .pillar-copy > p, .kpillar-copy > p, .step p, .culture-row p, .kculture-row p, .closing p { font-weight: 400; }
+.h-kicker { font-family: var(--f-ui); text-transform: uppercase; letter-spacing: .22em; font-size: 12px; font-weight: 500; color: var(--gold-deep); }
+.h-kicker::before { width: 34px; height: 1px; background: var(--gold); }
+
+/* ---------- buttons ---------- */
+.hbtn { border-radius: 2px; font: 500 14px var(--f-ui); letter-spacing: .14em; text-transform: uppercase; height: 54px; padding: 0 30px; }
+.hbtn.red, .hbtn.blue { background: var(--navy); color: var(--ivory); box-shadow: inset 0 0 0 1px rgba(201, 162, 74, .55), 0 18px 30px -18px rgba(11, 30, 59, .7); }
+.hbtn.red:hover, .hbtn.blue:hover { background: var(--navy-2); box-shadow: inset 0 0 0 1px var(--gold), 0 22px 34px -18px rgba(11, 30, 59, .75); }
+.hbtn.line { border: 1px solid var(--navy); color: var(--navy); }
+.hbtn.line:hover { background: var(--navy); color: var(--ivory); }
+.hbtn.sm { height: 46px; font-size: 12.5px; }
+.hlink { font: 500 13px var(--f-ui); letter-spacing: .16em; text-transform: uppercase; border-bottom: 1px solid var(--gold); color: var(--navy); }
+.hlink:hover { color: var(--gold-deep); }
+
+/* nav */
+.public .nav { background: rgba(248, 246, 239, .9); }
+.public .nav.scrolled { border-bottom-color: rgba(201, 162, 74, .28); }
+.public .nav-links a { font: 500 13px var(--f-ui); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-2); }
+.public .nav-links a.on, .public .nav-links a:hover { color: var(--navy); }
+.public .nav-links a.on::after { background: var(--gold) !important; }
+.public .nav .btn { border-radius: 2px; font: 500 12.5px var(--f-ui); letter-spacing: .12em; text-transform: uppercase; }
+.public .nav .btn.primary { background: var(--navy); border-color: var(--navy); box-shadow: inset 0 0 0 1px rgba(201, 162, 74, .5); }
+.public .nav .btn.primary:hover { background: var(--navy-2); }
+.public .nav .btn.outline { border-color: rgba(11, 30, 59, .35); color: var(--navy); }
+
+/* ---------- hero ---------- */
+.public { background: var(--ivory); }
+.h-hero { background: radial-gradient(900px 520px at 85% 10%, rgba(201, 162, 74, .14), transparent 65%), var(--ivory); }
+.h-hero::before { display: none; }
+.h-stats { border-top-color: rgba(201, 162, 74, .45); }
+.h-stats b { font-family: var(--f-head); font-weight: 600; font-size: 40px; color: var(--navy); }
+.h-stats li { letter-spacing: .06em; text-transform: uppercase; font-size: 12px; }
+.heart-photo .hl, .heart-photo .hr { stroke-width: 9; }
+.hl { stroke: var(--navy); }
+.hr { stroke: var(--gold); }
+.hdot { fill: var(--red); }
+.h-tag { border-radius: 2px; background: rgba(255, 255, 255, .96); box-shadow: inset 0 0 0 1px rgba(201, 162, 74, .45), 0 20px 40px -22px rgba(11, 30, 59, .45); font: 500 12px var(--f-ui); letter-spacing: .1em; text-transform: uppercase; color: var(--navy); }
+.h-tag .ic { color: var(--gold-deep); }
+
+/* ---------- pillars ---------- */
+.kpillars, .pillars { background: #fff; }
+.kthread path { stroke: var(--gold); opacity: .55; stroke-width: 1.5; }
+.arch { box-shadow: 0 40px 70px -40px rgba(11, 30, 59, .5); outline: 1px solid rgba(201, 162, 74, .5); outline-offset: 10px; }
+.kpillar-no, .pillar-no { background: var(--navy) !important; color: var(--gold-2) !important; font-family: var(--f-head); font-size: 24px; box-shadow: inset 0 0 0 1px var(--gold), 0 14px 30px -12px rgba(0, 0, 0, .35); }
+.kpillar-word, .pillar-word { font-family: var(--f-head); font-weight: 600; font-style: italic; color: var(--navy) !important; letter-spacing: -.01em; }
+.kpillar-word span, .pillar-word span { font-family: var(--f-ui); font-style: normal; font-weight: 500; color: var(--gold-deep); letter-spacing: .22em; font-size: 12px; }
+.kpillar-copy h3, .pillar-copy h3 { font-size: clamp(28px, 2.8vw, 38px); }
+.kpillar-copy li .ic, .pillar-copy li .ic { color: var(--gold) !important; }
+
+/* ---------- Ayiti cheri ---------- */
+.kculture, .culture { background: var(--ivory); }
+.ayiti { font-family: var(--f-head); font-weight: 600; color: var(--navy); letter-spacing: -.03em; }
+.ayiti span { font-style: italic; font-weight: 500; color: var(--gold-deep); }
+.cities { background: var(--navy); border-top: 1px solid rgba(201, 162, 74, .5); border-bottom: 1px solid rgba(201, 162, 74, .5); }
+.cities span { font-family: var(--f-head); font-weight: 500; font-style: italic; color: var(--ivory); }
+.cities span::after, .cities span:nth-child(even)::after { content: '✦'; color: var(--gold); }
+
+/* ---------- how ---------- */
+.how { background: #fff; }
+.step-ui { background: var(--ivory); border-radius: 4px; box-shadow: inset 0 0 0 1px rgba(201, 162, 74, .28); }
+.ui-match { background: var(--navy); }
+.ui-match .pair .ic { background: var(--red); }
+.ui-chat .me { background: var(--navy); }
+.ui-profile b .ic { background: var(--gold-deep); }
+.step-no { border-color: var(--gold); color: var(--navy); font-family: var(--f-head); font-size: 20px; }
+.step h3 { font-size: 30px; }
+.values { border-top-color: rgba(201, 162, 74, .4); }
+.values .ic, .values div:nth-child(2) .ic, .values div:nth-child(3) .ic { background: var(--navy); color: var(--gold-2); border-radius: 4px; }
+.values b { font-family: var(--f-head); font-size: 22px; }
+
+/* ---------- stories ---------- */
+.stories { background: var(--ivory-2); }
+.stories blockquote { font-family: var(--f-head); font-style: italic; font-weight: 500; font-size: clamp(28px, 3vw, 42px); line-height: 1.2; }
+.dots button.on { background: var(--gold); }
+
+/* ---------- plans ---------- */
+.plans { background: #fff; }
+.cmp-wrap { border-radius: 4px; border-color: rgba(201, 162, 74, .4); }
+.pn { font-family: var(--f-head); font-size: 26px; font-weight: 600; }
+.pp { font-family: var(--f-head); font-weight: 600; font-size: 48px; }
+.cmp .on { background: #FBF7EC; }
+.cmp thead th.on { background: var(--navy); }
+.cmp thead th.on .pp { color: var(--gold-2); }
+.cmp .yes { color: var(--gold-deep); }
+.pm { border-radius: 4px; border-color: rgba(201, 162, 74, .4); }
+.pm.on { background: var(--navy); border-color: var(--navy); }
+.pm.on .pp { color: var(--gold-2) !important; }
+.pm li .ic { color: var(--gold-deep); }
+.pm.on li .ic { color: var(--gold-2); }
+.pm.on .hbtn.red { background: var(--ivory); color: var(--navy); box-shadow: inset 0 0 0 1px var(--gold); }
+
+/* ---------- closing (navy, with the client's full logo) ---------- */
+.closing { background: radial-gradient(700px 400px at 20% 50%, rgba(201, 162, 74, .16), transparent 70%), var(--navy); }
+.closing-in { grid-template-columns: 300px 1fr; }
+.closing-mark img { width: 100%; height: auto; display: block; }
+.closing h2 { color: var(--ivory); }
+.closing h2 em { color: var(--gold-2); }
+.closing p { color: rgba(248, 246, 239, .78); }
+.closing .hbtn.red { background: var(--gold-grad); color: var(--navy); box-shadow: 0 18px 30px -18px rgba(0, 0, 0, .6); }
+.closing .hbtn.red:hover { filter: brightness(1.05); }
+
+/* ---------- footer ---------- */
+.public .foot { background: #081733; border-top: 1px solid rgba(201, 162, 74, .5); }
+.foot h5 { font-family: var(--f-ui); font-weight: 500; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--gold-2); }
+.public .foot .sig-foot { font-family: var(--f-head); font-style: italic; font-weight: 500; color: var(--ivory); }
+.news-row .btn { background: var(--gold-grad); color: var(--navy); border-radius: 999px; }
+.foot .lang button.on { background: var(--gold-2); color: var(--navy); }
+
+/* ---------- auth + app pick up the same identity ---------- */
+.auth h1, .auth h2 { font-family: var(--f-head); font-weight: 600; letter-spacing: -.01em; font-size: 40px; }
+.auth .btn.primary, .btn.primary { background: var(--navy); box-shadow: inset 0 0 0 1px rgba(201, 162, 74, .5); }
+.auth .btn.primary:hover:not(:disabled), .btn.primary:hover:not(:disabled) { background: var(--navy-2); box-shadow: inset 0 0 0 1px var(--gold); }
+.auth-r-card span { color: var(--gold-2); }
+
+@media (max-width: 860px) {
+  .closing-in { grid-template-columns: 1fr; }
+  .closing-mark { max-width: 220px; }
+  .public .logo img { height: 38px; }
+}
+@media (max-width: 520px) {
+  .h-hero h1 { font-size: 48px; }
+  .hbtn { letter-spacing: .1em; }
+  .h-stats b { font-size: 32px; }
+}
+
+/* fixes after first look */
+.kpillar-copy > p.kpillar-word { font-size: clamp(46px, 5.4vw, 76px); line-height: 1; color: var(--navy); margin: 0 0 18px; max-width: none; }
+.heart-photo .hdot { display: none; }
+.h-hero h1 { font-size: clamp(44px, 5.6vw, 80px); }
+.news-row .btn.primary, .news-row .btn { background: var(--gold-grad); color: var(--navy); box-shadow: none; font-weight: 600; }
+
+/* Mobile menu: backdrop-filter on the bar makes it the containing block for the
+   fixed drawer, which then gets clipped to the bar's 64px. Drop the blur while open. */
+.nav.open, .public .nav.open { backdrop-filter: none; -webkit-backdrop-filter: none; background: var(--ivory); }
+@media (max-width: 1024px) {
+  .public .nav-drawer { background: var(--ivory); border-top: 1px solid rgba(201, 162, 74, .4); }
+  .public .nav-drawer > a { font: 500 26px var(--f-head); color: var(--navy); border-bottom-color: rgba(201, 162, 74, .3); }
+  .public .nav-drawer > a .ic { color: var(--gold-deep); }
+  .public .nav-drawer-cta .btn { border-radius: 2px; font: 500 12.5px var(--f-ui); letter-spacing: .12em; text-transform: uppercase; height: 50px; }
+}
+.public .nav-links a { white-space: nowrap; }
+@media (max-width: 1280px) { .public .nav-links a { letter-spacing: .08em; } }
