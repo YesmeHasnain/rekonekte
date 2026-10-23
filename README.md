@@ -12,7 +12,7 @@ This drop completes **Milestone 1: Planning, UI/UX & Setup**.
 | Backend | Laravel 13 (PHP 8.3+) |
 | Database | MySQL 8 / MariaDB 10.6+ (SQLite works for local testing) |
 | Frontend | React 18 + React Router, built with Vite through `laravel-vite-plugin` |
-| API auth (milestone 2) | Laravel Sanctum |
+| Auth | Laravel Sanctum (session cookie) |
 
 Laravel serves one HTML shell (`resources/views/app.blade.php`) and the React app in `resources/js` draws every page. JSON endpoints live under `/api`.
 
@@ -22,6 +22,7 @@ Laravel serves one HTML shell (`resources/views/app.blade.php`) and the React ap
 - **Responsive UI:** desktop, tablet and mobile, in the client's brand. That means the client logo, navy, champagne gold and ivory, Cormorant Garamond for headings and Jost for body text.
 - **Languages:** EN / FR / HT switcher on the landing page, navigation, footer and app screens. Translations are drafts that the client should approve (`resources/js/phrases.js`, `resources/js/i18n.jsx`).
 - **Project and repository setup:** a Laravel application, a git repository, environment configuration and a build pipeline.
+- **Registration and login foundation:** working sign-up with the 18+ check on the server, an email verification code, login and logout, and password reset. The Register, Verify, Login and Reset screens are connected to the API.
 - **Database and application foundation:** the full MVP schema (see below), Eloquent models with relationships, demo seed data, and the first live endpoint (`GET /api/members` with age, gender and city filters).
 
 ### Database schema (`database/migrations/2026_10_23_000100_create_rekonekte_mvp_tables.php`)
@@ -37,12 +38,22 @@ Laravel serves one HTML shell (`resources/views/app.blade.php`) and the React ap
 | `posts` | Community posts with category, city, image, and a moderation status |
 | `events`, `event_rsvps` | Events listing, management and RSVPs |
 
-### Endpoints so far
+### Registration & login foundation (working, connected to the database)
+
+Session-cookie auth with Laravel Sanctum. The React app and the API are on the same domain.
 
 | Method | Path | |
 | --- | --- | --- |
+| POST | `/api/register` | Creates the account and profile. The **18+ check runs on the server** (date of birth + confirmation box + terms). Signs the member in and emails a 6-digit verification code |
+| POST | `/api/email/verify` | Verifies the email with the code (valid for 15 minutes) |
+| POST | `/api/email/resend` | Sends a new code |
+| POST | `/api/login` / `/api/logout` | Signs in and out. Suspended accounts are refused |
+| GET | `/api/me` | The signed-in member, or null |
+| POST | `/api/password/forgot` / `/api/password/reset` | Password reset with an emailed 6-digit code |
 | GET | `/api/health` | Checks that the app is up and connected to the database |
 | GET | `/api/members?min_age=&max_age=&gender=&city=` | Discover: filtered member list; suspended members are excluded |
+
+Login attempts are rate-limited, and verification and reset codes are stored hashed.
 
 ## Deployment note (shared cPanel hosting)
 
