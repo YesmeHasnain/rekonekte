@@ -455,3 +455,4 @@ label.set-row { flex-wrap: nowrap; }
 }
 .msg.them .bub { background: var(--surface-2); color: var(--text); border-bottom-left-radius: 5px; }
 .msg.me .bub { background: var(--blue); color: #fff; border-bottom-right-radius: 5px; }
+.gate-wait{min-height:100vh;background:var(--bg,#F8F6EF)}

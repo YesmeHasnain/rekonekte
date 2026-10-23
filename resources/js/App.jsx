@@ -14,6 +14,19 @@ import { MyProfile, EditProfile } from './app/Profile.jsx'
 import Settings from './app/Settings.jsx'
 import Admin from './app/Admin.jsx'
 import { SafetyModal, Toasts } from './components/ui.jsx'
+import { useStore } from './store.jsx'
+
+// Members-only area: signed in AND email verified. Anyone else is sent to log in
+// (with a link to register), unverified accounts finish verification first.
+function RequireMember({ children, admin }) {
+  const { account } = useStore()
+  const loc = useLocation()
+  if (account === undefined) return <div className="gate-wait" aria-busy="true" />
+  if (!account) return <Navigate to={'/login?next=' + encodeURIComponent(loc.pathname)} replace />
+  if (!account.email_verified) return <Navigate to={'/verify?email=' + encodeURIComponent(account.email)} replace />
+  if (admin && !['admin', 'moderator'].includes(account.role)) return <Navigate to="/app/discover" replace />
+  return children
+}
 
 function ScrollTop() {
   const { pathname, hash } = useLocation()
@@ -36,7 +49,7 @@ export default function App() {
         <Route path="/reset" element={<Reset />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
-        <Route path="/app" element={<AppLayout />}>
+        <Route path="/app" element={<RequireMember><AppLayout /></RequireMember>}>
           <Route index element={<Navigate to="discover" replace />} />
           <Route path="discover" element={<Discover />} />
           <Route path="members/:id" element={<MemberProfile />} />
@@ -47,7 +60,7 @@ export default function App() {
           <Route path="profile" element={<MyProfile />} />
           <Route path="profile/edit" element={<EditProfile />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="admin" element={<Admin />} />
+          <Route path="admin" element={<RequireMember admin><Admin /></RequireMember>} />
         </Route>
         <Route path="*" element={<NotFound />} />
       </Routes>

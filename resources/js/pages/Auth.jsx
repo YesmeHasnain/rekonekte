@@ -47,7 +47,8 @@ export function Login() {
     try {
       const r = await api('/login', { method: 'POST', body: { email, password: pw, remember } })
       setAccount(r.user)
-      nav(r.user.email_verified ? '/app/discover' : '/verify?email=' + encodeURIComponent(r.user.email))
+      const next = new URLSearchParams(window.location.search).get('next')
+      nav(r.user.email_verified ? (next && next.startsWith('/app') ? next : '/app/discover') : '/verify?email=' + encodeURIComponent(r.user.email))
     } catch (x) { setErr(x.message) } finally { setBusy(false) }
   }
   return (

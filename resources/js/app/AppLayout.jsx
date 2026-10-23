@@ -111,8 +111,10 @@ export default function AppLayout() {
         <button className="side-search" onClick={() => setPaletteOpen(true)}><Icon name="search" size={16} /> Search <kbd>{isMac ? '⌘' : 'Ctrl'} K</kbd></button>
         <nav className="side-nav">
           {items.map(([to, ic, l, n]) => <NavLink key={to} to={'/app/' + to} className={({ isActive }) => (isActive ? 'on' : '')}><Icon name={ic} size={19} /> <span>{l}</span>{n ? <em>{n}</em> : null}</NavLink>)}
-          <div className="side-sep">Team</div>
-          <NavLink to="/app/admin" className={({ isActive }) => (isActive ? 'on' : '')}><Icon name="shield" size={19} /> <span>{t('side.admin')}</span><em className="soft">5</em></NavLink>
+          {['admin', 'moderator'].includes(account?.role) && (<>
+            <div className="side-sep">Team</div>
+            <NavLink to="/app/admin" className={({ isActive }) => (isActive ? 'on' : '')}><Icon name="shield" size={19} /> <span>{t('side.admin')}</span><em className="soft">5</em></NavLink>
+          </>)}
         </nav>
         <div className="side-promo">
           <span className="soon"><i /> Coming soon</span>
