@@ -44,6 +44,10 @@ Laravel serves one HTML shell (`resources/views/app.blade.php`) and the React ap
 | GET | `/api/health` | Checks that the app is up and connected to the database |
 | GET | `/api/members?min_age=&max_age=&gender=&city=` | Discover: filtered member list; suspended members are excluded |
 
+## Deployment note (shared cPanel hosting)
+
+Point the domain's document root at `public/`. If the host's default PHP is older than 8.4, select PHP 8.4 for the domain. On cPanel without MultiPHP you can add `AddHandler application/x-httpd-ea-php84 .php` to `public/.htaccess`. Use `MAIL_MAILER=sendmail` (or SMTP) so the verification and reset codes get delivered.
+
 > Most screens still use demo data from `resources/js/data.js`. Milestone 2 connects each screen to the database. That covers accounts and email verification, profiles and photo upload, matching, messaging, block and report, community, events and the admin dashboard.
 
 ## Run it locally
