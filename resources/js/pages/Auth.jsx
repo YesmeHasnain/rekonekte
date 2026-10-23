@@ -1,3 +1,5 @@
+import { api } from '../api.js'
+import { useStore } from '../store.jsx'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
@@ -34,23 +36,32 @@ function Pw({ value, onChange, placeholder = '••••••••', autoCom
 export function Login() {
   const { t } = useI18n()
   const nav = useNavigate()
-  const [email, setEmail] = useState('daniela@mail.com')
-  const [pw, setPw] = useState('lakay2026')
+  const { setAccount } = useStore()
+  const [email, setEmail] = useState('')
+  const [pw, setPw] = useState('')
+  const [remember, setRemember] = useState(true)
   const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const submit = async (e) => {
+    e.preventDefault(); setBusy(true); setErr('')
+    try {
+      const r = await api('/login', { method: 'POST', body: { email, password: pw, remember } })
+      setAccount(r.user)
+      nav(r.user.email_verified ? '/app/discover' : '/verify?email=' + encodeURIComponent(r.user.email))
+    } catch (x) { setErr(x.message) } finally { setBusy(false) }
+  }
   return (
     <AuthShell>
       <h1>{t('auth.loginTitle')}</h1>
       <p className="muted">Log in to see who's new in your city.</p>
-      <form className="form" onSubmit={(e) => { e.preventDefault(); setBusy(true); setTimeout(() => nav('/app/discover'), 600) }}>
+      <form className="form" onSubmit={submit}>
         <label className="field"><span>Email</span><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" /></label>
         <label className="field"><span>Password <Link to="/reset" className="link-s">Forgot password?</Link></span><Pw value={pw} onChange={(e) => setPw(e.target.value)} autoComplete="current-password" /></label>
-        <label className="check"><input type="checkbox" defaultChecked /> Keep me logged in</label>
+        <label className="check"><input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} /> Keep me logged in</label>
+        {err && <div className="alert err"><Icon name="flag" size={16} /> {err}</div>}
         <button className="btn primary wide lg" disabled={busy}>{busy ? 'Logging in…' : t('nav.login')}</button>
-        <div className="or"><span>or</span></div>
-        <div className="row2"><button type="button" className="btn ghost" onClick={() => nav('/app/discover')}>Continue with Google</button><button type="button" className="btn ghost" onClick={() => nav('/app/discover')}>Continue with Apple</button></div>
       </form>
       <p className="muted center">New here? <Link to="/register">Create an account</Link></p>
-      <p className="tiny-note center">Concept: any credentials work — no real auth.</p>
     </AuthShell>
   )
 }
@@ -72,6 +83,9 @@ export function Register() {
   const [adult, setAdult] = useState(false)
   const [terms, setTerms] = useState(false)
   const [tried, setTried] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const { setAccount } = useStore()
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value })
   const age = ageFrom(f.y, f.m, f.d)
   const under = age !== null && age < 18
@@ -83,7 +97,23 @@ export function Register() {
       <div className="steps-mini"><span className="on">1 Account</span><i /><span>2 Verify email</span><i /><span>3 Profile</span></div>
       <h1>{t('auth.registerTitle')}</h1>
       <p className="muted">Free forever for the basics. 18+ only.</p>
-      <form className="form" onSubmit={(e) => { e.preventDefault(); setTried(true); if (ok) nav('/verify?email=' + encodeURIComponent(f.email)) }}>
+      <form className="form" onSubmit={async (e) => {
+        e.preventDefault(); setTried(true); setErr('')
+        if (!ok) return
+        setBusy(true)
+        try {
+          const pad = (n) => String(n).padStart(2, '0')
+          const r = await api('/register', { method: 'POST', body: {
+            name: f.name, email: f.email, password: f.pw,
+            gender: { 'A woman': 'woman', 'A man': 'man', 'Non-binary': 'other' }[f.gender],
+            interested_in: { Women: 'women', Men: 'men' }[f.seeking] || 'everyone',
+            date_of_birth: `${f.y}-${pad(+f.m + 1)}-${pad(f.d)}`,
+            adult_confirmed: adult, terms_accepted: terms,
+          } })
+          setAccount(r.user)
+          nav('/verify?email=' + encodeURIComponent(r.user.email))
+        } catch (x) { setErr(x.message) } finally { setBusy(false) }
+      }}>
         <div className="row2">
           <label className="field"><span>First name</span><input required value={f.name} onChange={set('name')} placeholder="Daniela" autoComplete="given-name" /></label>
           <label className="field"><span>Email</span><input type="email" required value={f.email} onChange={set('email')} placeholder="you@email.com" autoComplete="email" /></label>
@@ -106,7 +136,8 @@ export function Register() {
         <label className={'check' + (tried && !adult ? ' err' : '')}><input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} /> I confirm I am 18 years of age or older.</label>
         <label className={'check' + (tried && !terms ? ' err' : '')}><input type="checkbox" checked={terms} onChange={(e) => setTerms(e.target.checked)} /> <span>I agree to the <Link to="/terms">Terms</Link> and <Link to="/privacy">Privacy Policy</Link>.</span></label>
         {tried && !ok && !under && <div className="alert err"><Icon name="flag" size={16} /> Please complete every field and confirm both boxes.</div>}
-        <button className="btn primary wide lg" disabled={under}>Create account <Icon name="arrow" size={16} /></button>
+        {err && <div className="alert err"><Icon name="flag" size={16} /> {err}</div>}
+        <button className="btn primary wide lg" disabled={under || busy}>{busy ? 'Creating your account…' : <>Create account <Icon name="arrow" size={16} /></>}</button>
       </form>
       <p className="muted center">Already a member? <Link to="/login">Log in</Link></p>
     </AuthShell>
@@ -136,7 +167,9 @@ export function Verify() {
   const { t } = useI18n()
   const nav = useNavigate()
   const [sp] = useSearchParams()
-  const email = sp.get('email') || 'daniela@mail.com'
+  const { account, setAccount } = useStore()
+  const email = account?.email || sp.get('email') || ''
+  const [busy, setBusy] = useState(false)
   const [code, setCode] = useState('')
   const [err, setErr] = useState('')
   const [left, setLeft] = useState(30)
@@ -149,13 +182,19 @@ export function Verify() {
         <div className="inbox-ill"><Icon name="mail" size={30} /><i /></div>
         <h1>{t('auth.verifyTitle')}</h1>
         <p className="muted">We sent a 6-digit code to <b>{email}</b>. It expires in 15 minutes.</p>
-        <form className="form" onSubmit={(e) => { e.preventDefault(); if (code.length < 6) return setErr('Enter all 6 digits.'); if (code === '000000') return setErr('That code is incorrect. Try again.'); setOk(true) }}>
+        <form className="form" onSubmit={async (e) => {
+          e.preventDefault()
+          if (code.length < 6) return setErr('Enter all 6 digits.')
+          setBusy(true)
+          try { const r = await api('/email/verify', { method: 'POST', body: { code } }); setAccount(r.user); setOk(true) }
+          catch (x) { setErr(x.status === 401 ? 'Please log in again to verify your email.' : x.message) }
+          finally { setBusy(false) }
+        }}>
           <CodeInput value={code} onChange={(v) => { setCode(v); setErr('') }} error={err} />
           {err && <div className="alert err"><Icon name="flag" size={16} /> {err}</div>}
-          <button className="btn primary wide lg">Verify email</button>
+          <button className="btn primary wide lg" disabled={busy}>{busy ? 'Checking…' : 'Verify email'}</button>
         </form>
-        <p className="muted center small">Didn't get it? Check spam, or {left > 0 ? <span>resend in 0:{String(left).padStart(2, '0')}</span> : <button className="link-btn" onClick={() => setLeft(30)}>resend the code</button>}</p>
-        <p className="tiny-note center">Concept: any 6 digits work (000000 shows the error state).</p>
+        <p className="muted center small">Didn't get it? Check spam, or {left > 0 ? <span>resend in 0:{String(left).padStart(2, '0')}</span> : <button className="link-btn" onClick={() => { setLeft(30); api('/email/resend', { method: 'POST' }).catch((x) => setErr(x.message)) }}>resend the code</button>}</p>
       </>) : (
         <div className="success-block">
           <span className="done-ill big"><Icon name="check" size={40} /></span>
@@ -183,7 +222,7 @@ export function Reset() {
         <Link to="/login" className="back-link"><Icon name="back" size={16} /> Back to log in</Link>
         <h1>{t('auth.resetTitle')}</h1>
         <p className="muted">Enter the email on your account and we'll send you a reset code.</p>
-        <form className="form" onSubmit={(e) => { e.preventDefault(); setStep(2) }}>
+        <form className="form" onSubmit={async (e) => { e.preventDefault(); setErr(''); try { await api('/password/forgot', { method: 'POST', body: { email } }); setStep(2) } catch (x) { setErr(x.message) } }}>
           <label className="field"><span>Email</span><input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@email.com" /></label>
           <button className="btn primary wide lg">Send reset code</button>
         </form>
@@ -192,7 +231,7 @@ export function Reset() {
         <button className="back-link" onClick={() => setStep(1)}><Icon name="back" size={16} /> Change email</button>
         <h1>Choose a new password</h1>
         <p className="muted">Code sent to <b>{email}</b>.</p>
-        <form className="form" onSubmit={(e) => { e.preventDefault(); if (code.length < 6) return setErr('Enter the 6-digit code.'); if (p1.length < 8) return setErr('Password must be at least 8 characters.'); if (p1 !== p2) return setErr('Passwords don\'t match.'); setStep(3) }}>
+        <form className="form" onSubmit={(e) => { e.preventDefault(); if (code.length < 6) return setErr('Enter the 6-digit code.'); if (p1.length < 8) return setErr('Password must be at least 8 characters.'); if (p1 !== p2) return setErr('Passwords don\'t match.'); api('/password/reset', { method: 'POST', body: { email, code, password: p1, password_confirmation: p2 } }).then(() => setStep(3)).catch((x) => setErr(x.message)) }}>
           <div className="field"><span>Reset code</span><CodeInput value={code} onChange={(v) => { setCode(v); setErr('') }} /></div>
           <label className="field"><span>New password</span><Pw value={p1} onChange={(e) => { setP1(e.target.value); setErr('') }} autoComplete="new-password" /></label>
           <label className="field"><span>Confirm password</span><Pw value={p2} onChange={(e) => { setP2(e.target.value); setErr('') }} autoComplete="new-password" /></label>

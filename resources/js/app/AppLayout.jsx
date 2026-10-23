@@ -6,7 +6,7 @@ import { Avatar, Icon, LangSwitch, Logo } from '../components/ui.jsx'
 import { EVENTS, MEMBERS, POSTS, member } from '../data.js'
 
 function Palette() {
-  const { paletteOpen, setPaletteOpen } = useStore()
+  const { paletteOpen, setPaletteOpen, account, logout } = useStore()
   const { t } = useI18n()
   const nav = useNavigate()
   const [q, setQ] = useState('')
@@ -91,7 +91,7 @@ function Notifications() {
 
 export default function AppLayout() {
   const { t } = useI18n()
-  const { setPaletteOpen, threads, me, blocked } = useStore()
+  const { setPaletteOpen, threads, me, blocked, account, logout } = useStore()
   const [drawer, setDrawer] = useState(false)
   const loc = useLocation()
   const nav = useNavigate()
@@ -121,8 +121,8 @@ export default function AppLayout() {
         </div>
         <div className="side-me">
           <Avatar src={me.photo} size={38} online />
-          <div><b>{me.name}</b><span>{me.city} · Verified</span></div>
-          <button className="icon-btn" onClick={() => nav('/')} aria-label={t('btn.logout')} title={t('btn.logout')}><Icon name="logout" size={17} /></button>
+          <div><b>{me.name}</b><span>{me.city}{account?.email_verified === false ? ' · Email not verified' : ' · Verified'}</span></div>
+          <button className="icon-btn" onClick={async () => { await logout(); nav('/login') }} aria-label={t('btn.logout')} title={t('btn.logout')}><Icon name="logout" size={17} /></button>
         </div>
       </aside>
       <div className="side-scrim" onClick={() => setDrawer(false)} />

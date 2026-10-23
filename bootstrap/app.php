@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // The React app is served from the same domain, so /api uses the session cookie (Sanctum SPA auth).
+        $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

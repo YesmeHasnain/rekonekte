@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { ME, THREADS, POSTS, EVENTS, ADMIN_USERS, REPORTS, PENDING_POSTS } from './data.js'
+import { api } from './api.js'
 
 const Store = createContext(null)
 
@@ -18,6 +19,13 @@ export function StoreProvider({ children }) {
   const [toasts, setToasts] = useState([])
   const [safety, setSafety] = useState(null) // { mode: 'block'|'report', id, context }
   const [paletteOpen, setPaletteOpen] = useState(false)
+  // The real signed-in account (Laravel session). null = signed out, undefined = still checking.
+  const [account, setAccount] = useState(undefined)
+  useEffect(() => { api('/me').then((r) => setAccount(r?.user ?? null)).catch(() => setAccount(null)) }, [])
+  useEffect(() => {
+    if (account) setMe((m) => ({ ...m, name: account.name, email: account.email, city: account.city || 'Add your city', age: account.age || m.age, photo: account.photo || m.photo }))
+  }, [account])
+  const logout = async () => { try { await api('/logout', { method: 'POST' }) } catch {} setAccount(null); setMe(ME) }
 
   useEffect(() => { document.documentElement.dataset.theme = theme }, [theme])
 
@@ -46,7 +54,8 @@ export function StoreProvider({ children }) {
   const fileReport = (r) => setReports((rs) => [{ id: 'r' + Date.now(), by: 'me', time: 'Just now', status: 'open', severity: 'medium', ...r }, ...rs])
 
   const value = { theme, setTheme, me, setMe, threads, send, receive, openThread, markRead, posts, setPosts, addPost, going, toggleGoing, liked, like, passed, pass, setPassed, setLiked,
-    blocked, block, unblock, users, setUsers, reports, setReports, fileReport, queue, setQueue, toasts, toast, safety, setSafety, paletteOpen, setPaletteOpen }
+    blocked, block, unblock, users, setUsers, reports, setReports, fileReport, queue, setQueue, toasts, toast, safety, setSafety, paletteOpen, setPaletteOpen,
+    account, setAccount, logout }
   return <Store.Provider value={value}>{children}</Store.Provider>
 }
 export const useStore = () => useContext(Store)
