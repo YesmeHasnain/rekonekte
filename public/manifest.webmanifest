@@ -1,0 +1,19 @@
+{
+  "name": "Rekonekte — Lanmou · Kominote · Lakay",
+  "short_name": "Rekonekte",
+  "description": "Dating and community for the Haitian diaspora — date, gather and belong.",
+  "start_url": "/app/discover",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0B1E3B",
+  "theme_color": "#0B1E3B",
+  "lang": "en",
+  "categories": ["social", "lifestyle"],
+  "icons": [
+    { "src": "/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/img/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/img/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

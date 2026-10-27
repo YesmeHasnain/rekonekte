@@ -1,31 +1,27 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
-import { ME, THREADS, POSTS, EVENTS, ADMIN_USERS, REPORTS, PENDING_POSTS } from './data.js'
 import { api } from './api.js'
 
 const Store = createContext(null)
 
+const DEFAULT_ME = { id: null, name: 'You', city: 'Add your city', age: null, photo: '/img/avatar.svg', verified: false, bio: '', interests: [], langs: [], job: '', lookingFor: 'Something serious' }
+
 export function StoreProvider({ children }) {
   const [theme, setTheme] = useState('light') // Classic theme is light-only
-  const [me, setMe] = useState(ME)
-  const [threads, setThreads] = useState(THREADS)
-  const [posts, setPosts] = useState(POSTS)
-  const [going, setGoing] = useState(['e1'])
-  const [liked, setLiked] = useState([])
-  const [passed, setPassed] = useState([])
-  const [blocked, setBlocked] = useState([])
-  const [users, setUsers] = useState(ADMIN_USERS)
-  const [reports, setReports] = useState(REPORTS)
-  const [queue, setQueue] = useState(PENDING_POSTS)
+  const [me, setMe] = useState(DEFAULT_ME)
   const [toasts, setToasts] = useState([])
-  const [safety, setSafety] = useState(null) // { mode: 'block'|'report', id, context }
+  const [safety, setSafety] = useState(null) // { mode:'block'|'report', member:{id,name,photo,city}, context?, after? }
   const [paletteOpen, setPaletteOpen] = useState(false)
   // The real signed-in account (Laravel session). null = signed out, undefined = still checking.
   const [account, setAccount] = useState(undefined)
+
+  const refreshMe = useCallback(async () => {
+    try { const r = await api('/profile'); if (r?.me) setMe({ ...DEFAULT_ME, ...r.me, photo: r.me.photo || '/img/avatar.svg' }) } catch {}
+  }, [])
+
   useEffect(() => { api('/me').then((r) => setAccount(r?.user ?? null)).catch(() => setAccount(null)) }, [])
-  useEffect(() => {
-    if (account) setMe((m) => ({ ...m, name: account.name, email: account.email, city: account.city || 'Add your city', age: account.age || m.age, photo: account.photo || m.photo }))
-  }, [account])
-  const logout = async () => { try { await api('/logout', { method: 'POST' }) } catch {} setAccount(null); setMe(ME) }
+  useEffect(() => { if (account) refreshMe() }, [account, refreshMe])
+
+  const logout = async () => { try { await api('/logout', { method: 'POST' }) } catch {} setAccount(null); setMe(DEFAULT_ME) }
 
   useEffect(() => { document.documentElement.dataset.theme = theme }, [theme])
 
@@ -35,27 +31,7 @@ export function StoreProvider({ children }) {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3200)
   }, [])
 
-  const send = (threadId, text) => setThreads((ts) => ts.map((t) => t.id === threadId ? { ...t, unread: 0, messages: [...t.messages, { from: 'me', text, at: 'Now' }] } : t))
-  const receive = (threadId, from, text) => setThreads((ts) => ts.map((t) => t.id === threadId ? { ...t, messages: [...t.messages, { from, text, at: 'Now' }] } : t))
-  const openThread = (memberId) => {
-    let t = threads.find((x) => x.with === memberId)
-    if (t) return t.id
-    const id = 't' + Date.now()
-    setThreads((ts) => [{ id, with: memberId, unread: 0, messages: [] }, ...ts])
-    return id
-  }
-  const markRead = (threadId) => setThreads((ts) => ts.map((t) => t.id === threadId ? { ...t, unread: 0 } : t))
-  const addPost = (p) => setPosts((ps) => [{ id: 'p' + Date.now(), author: 'me', time: 'Just now', likes: 0, comments: 0, status: 'approved', ...p }, ...ps])
-  const toggleGoing = (id) => setGoing((g) => g.includes(id) ? g.filter((x) => x !== id) : [...g, id])
-  const like = (id) => setLiked((l) => l.includes(id) ? l : [...l, id])
-  const pass = (id) => setPassed((l) => l.includes(id) ? l : [...l, id])
-  const block = (id) => setBlocked((b) => b.includes(id) ? b : [...b, id])
-  const unblock = (id) => setBlocked((b) => b.filter((x) => x !== id))
-  const fileReport = (r) => setReports((rs) => [{ id: 'r' + Date.now(), by: 'me', time: 'Just now', status: 'open', severity: 'medium', ...r }, ...rs])
-
-  const value = { theme, setTheme, me, setMe, threads, send, receive, openThread, markRead, posts, setPosts, addPost, going, toggleGoing, liked, like, passed, pass, setPassed, setLiked,
-    blocked, block, unblock, users, setUsers, reports, setReports, fileReport, queue, setQueue, toasts, toast, safety, setSafety, paletteOpen, setPaletteOpen,
-    account, setAccount, logout }
+  const value = { theme, setTheme, me, setMe, refreshMe, toasts, toast, safety, setSafety, paletteOpen, setPaletteOpen, account, setAccount, logout }
   return <Store.Provider value={value}>{children}</Store.Provider>
 }
 export const useStore = () => useContext(Store)

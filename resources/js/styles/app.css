@@ -456,3 +456,37 @@ label.set-row { flex-wrap: nowrap; }
 .msg.them .bub { background: var(--surface-2); color: var(--text); border-bottom-left-radius: 5px; }
 .msg.me .bub { background: var(--blue); color: #fff; border-bottom-right-radius: 5px; }
 .gate-wait{min-height:100vh;background:var(--bg,#F8F6EF)}
+
+/* ---------- Milestone 2 additions ---------- */
+
+/* Install app (PWA) */
+.install-pill { display: inline-flex; align-items: center; gap: 7px; margin: 10px 0 0; padding: 9px 14px; width: 100%; justify-content: center;
+  border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--blue); font: 600 13px var(--f-ui); cursor: pointer; transition: .15s; }
+.install-pill:hover { background: var(--blue); color: #fff; border-color: var(--blue); }
+.ios-steps { margin: 4px 0 0; padding-left: 20px; display: grid; gap: 10px; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.ios-steps b { color: var(--text); }
+
+/* Community comments */
+.comments { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; display: grid; gap: 12px; }
+.comment { display: flex; gap: 10px; align-items: flex-start; }
+.comment-b { background: var(--surface-2); border-radius: 12px; padding: 8px 12px; flex: 1; }
+.comment-b b { font-size: 13.5px; }
+.comment-b p { margin: 2px 0 0; font-size: 14px; color: var(--text); white-space: pre-wrap; }
+.comment-add { display: flex; gap: 8px; align-items: center; }
+.comment-add input { flex: 1; border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px; font: 400 14px var(--f-ui); background: var(--surface); color: var(--text); }
+.comment-add input:focus { outline: none; border-color: var(--blue); }
+.btn.xs { padding: 7px 10px; font-size: 12px; border-radius: 9px; }
+
+/* Four-language switch */
+.lang-seg { flex-wrap: wrap; }
+
+@media (max-width: 560px) {
+  /* Language lives in Settings on small screens — keep the top bar uncluttered */
+  .top-r .lang { display: none; }
+}
+
+/* A touch more "app" feel on phones: safe-area padding + comfortable tap targets */
+@media (max-width: 900px) {
+  .content { padding-bottom: calc(76px + env(safe-area-inset-bottom)); }
+  .tabbar a { min-height: 48px; justify-content: center; }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Api\Concerns\PresentsMembers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -9,11 +10,13 @@ use Illuminate\Support\Carbon;
 
 /**
  * Discover: browse members filtered by age range, gender and city (quotation §1,
- * "Basic matching and discovery"). Suspended members and anyone who hides from
- * Discover are never listed.
+ * "Basic matching and discovery"). Suspended members, anyone who hides from
+ * Discover, people already passed, and blocks (either direction) are never listed.
  */
 class MemberController extends Controller
 {
+    use PresentsMembers;
+
     public function index(Request $request)
     {
         $data = $request->validate([
@@ -22,6 +25,8 @@ class MemberController extends Controller
             'gender' => ['nullable', 'in:woman,man,other'],
             'city' => ['nullable', 'string', 'max:80'],
         ]);
+
+        $me = $request->user();
 
         $q = User::query()
             ->with(['profile', 'photos'])
@@ -37,21 +42,38 @@ class MemberController extends Controller
         if ($max = $data['max_age'] ?? null) {
             $q->whereDate('date_of_birth', '>', Carbon::now()->subYears($max + 1));
         }
-        if ($me = $request->user()) {
+        if ($me) {
             $q->whereKeyNot($me->id)->whereNotIn('id', $me->hiddenUserIds());
+            // Hide people the member already passed on.
+            $q->whereNotIn('id', \App\Models\Pass::where('user_id', $me->id)->pluck('passed_id'));
         }
 
-        return $q->orderByDesc('last_seen_at')->paginate(24)->through(fn (User $u) => [
-            'id' => $u->id,
-            'name' => $u->profile->display_name,
-            'age' => $u->date_of_birth?->age,
-            'gender' => $u->profile->gender,
-            'city' => $u->profile->city,
-            'job' => $u->profile->job,
-            'verified' => $u->profile->is_verified,
-            'photo' => optional($u->photos->firstWhere('is_primary', true))->path,
-            'languages' => $u->profile->languages,
-            'interests' => $u->profile->interests,
-        ]);
+        $likedIds = \App\Models\Like::where('liker_id', $me->id)->pluck('liked_id')->all();
+
+        return $q->orderByDesc('last_seen_at')->paginate(30)
+            ->through(fn (User $u) => $this->presentMember($u, $me) + ['liked' => in_array($u->id, $likedIds, true)]);
+    }
+
+    /** A single member's full profile for the member page. */
+    public function show(Request $request, User $user)
+    {
+        $me = $request->user();
+        if ($user->role !== 'member' || $user->isSuspended() || in_array($user->id, $me->hiddenUserIds(), true)) {
+            abort(404);
+        }
+
+        $data = $this->presentMember($user, $me);
+        $data['liked'] = \App\Models\Like::where(['liker_id' => $me->id, 'liked_id' => $user->id])->exists();
+        $data['matched'] = $me->hasMatchWith($user);
+
+        // A few "you might also like" — same gender preference, not hidden.
+        $data['similar'] = User::where('role', 'member')->whereNull('suspended_at')
+            ->whereKeyNot($user->id)->whereKeyNot($me->id)
+            ->whereNotIn('id', $me->hiddenUserIds())
+            ->whereHas('profile', fn ($p) => $p->where('gender', $user->profile?->gender)->where('show_in_discover', true))
+            ->with(['profile', 'photos'])->inRandomOrder()->limit(3)->get()
+            ->map(fn (User $u) => $this->presentMember($u, $me))->values();
+
+        return ['member' => $data];
     }
 }

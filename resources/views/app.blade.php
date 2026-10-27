@@ -8,6 +8,14 @@
     <title>Rekonekte — Lanmou · Kominote · Lakay</title>
     <meta name="description" content="Rekonekte — the dating and community platform for the Haitian diaspora.">
     <link rel="icon" href="/img/logo-mark.png">
+    {{-- Installable web app (PWA) --}}
+    <link rel="manifest" href="/manifest.webmanifest">
+    <meta name="theme-color" content="#0B1E3B">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rekonekte">
+    <link rel="apple-touch-icon" href="/img/icon-192.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Kaushan+Script&display=swap" rel="stylesheet">

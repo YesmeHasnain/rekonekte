@@ -2,7 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useI18n, LANGS } from '../i18n.jsx'
 import { useStore } from '../store.jsx'
-import { REPORT_REASONS, member } from '../data.js'
+import { api } from '../api.js'
+import { useInstall } from '../pwa.js'
+
+const REPORT_REASONS = ['Fake profile / scam', 'Inappropriate messages', 'Harassment or bullying', 'Underage concern', 'Spam or promotion', 'Hate speech', 'Something else']
+
+/** A usable image URL: API paths start with "/", bare demo names get /img/, blank falls back. */
+export const photoUrl = (p) => (!p ? '/img/avatar.svg' : p.startsWith('blob:') || p.startsWith('data:') || p.startsWith('/') ? p : '/img/' + p)
 
 const P = {
   compass: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm3.5 6.5-2 5-5 2 2-5 5-2Z',
@@ -151,21 +157,32 @@ export function Modal({ open, onClose, title, children, width = 480 }) {
   )
 }
 
-/** Global block / report modal, driven by store.safety */
+/** Global block / report modal, driven by store.safety ({ mode, member, context?, after? }) */
 export function SafetyModal() {
-  const { safety, setSafety, block, fileReport, toast } = useStore()
+  const { safety, setSafety, toast } = useStore()
   const [reason, setReason] = useState('')
   const [detail, setDetail] = useState('')
   const [alsoBlock, setAlsoBlock] = useState(true)
   const [step, setStep] = useState(1)
-  useEffect(() => { setReason(''); setDetail(''); setStep(1); setAlsoBlock(true) }, [safety])
+  const [busy, setBusy] = useState(false)
+  useEffect(() => { setReason(''); setDetail(''); setStep(1); setAlsoBlock(true); setBusy(false) }, [safety])
   if (!safety) return null
-  const m = member(safety.id) || { name: 'this member', photo: 'p-jean.jpg' }
+  const m = safety.member || { id: safety.id, name: 'this member', photo: null, city: '' }
   const close = () => setSafety(null)
+  const doBlock = async () => {
+    setBusy(true)
+    try { await api('/members/' + m.id + '/block', { method: 'POST' }); toast(`${m.name} has been blocked`); close(); safety.after?.() }
+    catch (e) { toast(e.message, 'err'); setBusy(false) }
+  }
+  const submitReport = async () => {
+    setBusy(true)
+    try { await api('/members/' + m.id + '/report', { method: 'POST', body: { reason, details: detail, also_block: alsoBlock } }); setStep(3) }
+    catch (e) { toast(e.message, 'err'); setBusy(false) }
+  }
   if (safety.mode === 'block') {
     return (
       <Modal open onClose={close} title={`Block ${m.name}?`}>
-        <div className="safety-who"><img src={'/img/' + m.photo} alt="" /><div><b>{m.name}</b><span>{m.city}</span></div></div>
+        <div className="safety-who"><img src={photoUrl(m.photo)} alt="" /><div><b>{m.name}</b><span>{m.city}</span></div></div>
         <ul className="safety-list">
           <li><Icon name="check" size={16} /> They won't be able to see your profile or message you.</li>
           <li><Icon name="check" size={16} /> Your conversation will be hidden from your inbox.</li>
@@ -173,7 +190,7 @@ export function SafetyModal() {
         </ul>
         <div className="modal-f">
           <button className="btn ghost" onClick={close}>Cancel</button>
-          <button className="btn danger" onClick={() => { block(safety.id); toast(`${m.name} has been blocked`); close(); safety.after?.() }}><Icon name="ban" size={16} /> Block {m.name}</button>
+          <button className="btn danger" disabled={busy} onClick={doBlock}><Icon name="ban" size={16} /> Block {m.name}</button>
         </div>
       </Modal>
     )
@@ -196,7 +213,7 @@ export function SafetyModal() {
         <label className="check"><input type="checkbox" checked={alsoBlock} onChange={(e) => setAlsoBlock(e.target.checked)} /> Also block {m.name}</label>
         <div className="confirm-box"><Icon name="flag" size={16} /> You're reporting <b>{m.name}</b> for <b>{reason}</b>.</div>
         <div className="modal-f"><button className="btn ghost" onClick={() => setStep(1)}>Back</button>
-          <button className="btn danger" onClick={() => { fileReport({ target: safety.id, reason, detail }); if (alsoBlock) block(safety.id); setStep(3) }}>Submit report</button></div>
+          <button className="btn danger" disabled={busy} onClick={submitReport}>Submit report</button></div>
       </>)}
       {step === 3 && (<>
         <div className="done-ill"><Icon name="shield" size={40} /></div>
@@ -212,10 +229,39 @@ export function Toasts() {
   return <div className="toasts">{toasts.map((t) => <div key={t.id} className={'toast ' + t.tone}><Icon name="check" size={16} /> {t.text}</div>)}</div>
 }
 
+/**
+ * "Install app" — shows only when the browser says the app is installable
+ * (Android / desktop Chrome) or on iOS Safari (which needs the manual hint).
+ * `variant`: "pill" (compact, for the sidebar) or "row" (for Settings).
+ */
+export function InstallButton({ variant = 'pill' }) {
+  const { can, ios, install } = useInstall()
+  const [hint, setHint] = useState(false)
+  if (!can) return null
+  const click = async () => { if (ios) setHint(true); else await install() }
+  return (
+    <>
+      {variant === 'row' ? (
+        <div className="set-row"><div><b>Install Rekonekte</b><span>Add it to your home screen and open it like an app.</span></div><button className="btn primary sm" onClick={click}><Icon name="plus" size={15} /> Install</button></div>
+      ) : (
+        <button className="install-pill" onClick={click}><Icon name="plus" size={15} /> Install app</button>
+      )}
+      <Modal open={hint} onClose={() => setHint(false)} title="Add Rekonekte to your Home Screen">
+        <ol className="ios-steps">
+          <li>Tap the <b>Share</b> button in Safari <Icon name="send" size={14} /></li>
+          <li>Scroll and tap <b>Add to Home Screen</b></li>
+          <li>Tap <b>Add</b> — Rekonekte opens like an app ❤️</li>
+        </ol>
+        <div className="modal-f"><button className="btn primary wide" onClick={() => setHint(false)}>Got it</button></div>
+      </Modal>
+    </>
+  )
+}
+
 export function Avatar({ src, size = 40, online, ring }) {
   return (
     <span className={'av' + (ring ? ' ring' : '')} style={{ width: size, height: size }}>
-      <img src={src.startsWith('blob:') || src.startsWith('data:') || src.startsWith('/') ? src : '/img/' + src} alt="" />
+      <img src={photoUrl(src)} alt="" />
       {online && <i className="dot-on" />}
     </span>
   )

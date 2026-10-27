@@ -77,6 +77,12 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Post::class);
     }
 
+    /** Events this member has RSVP'd to. */
+    public function events(): BelongsToMany
+    {
+        return $this->belongsToMany(Event::class, 'event_rsvps')->withTimestamps();
+    }
+
     /** True when both members liked each other. */
     public function hasMatchWith(User $other): bool
     {

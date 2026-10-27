@@ -1,9 +1,12 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 import { useStore } from '../store.jsx'
-import { Icon } from '../components/ui.jsx'
-import { CITIES, MEMBERS } from '../data.js'
+import { Icon, photoUrl } from '../components/ui.jsx'
+import { api } from '../api.js'
+import { useApi } from '../useApi.js'
+
+const CITIES = ['Miami', 'Brooklyn', 'Montréal', 'Boston', 'Port-au-Prince', 'Paris', 'Orlando', 'Cap-Haïtien']
 
 export function DualRange({ min, max, lo, hi, onChange }) {
   const pct = (v) => ((v - min) / (max - min)) * 100
@@ -20,29 +23,50 @@ const DEFAULT = { age: [18, 60], gender: 'all', city: 'all', verified: false, on
 
 export default function Discover() {
   const { t } = useI18n()
-  const { liked, like, passed, pass, setPassed, blocked, openThread, toast } = useStore()
+  const { me, toast } = useStore()
   const nav = useNavigate()
+  const { data, loading, reload } = useApi('/members')
+  const members = data?.data ?? []
+  const [liked, setLiked] = useState(() => new Set())
+  const [passed, setPassed] = useState(() => new Set())
+  const [passCount, setPassCount] = useState(0)
   const [f, setF] = useState(DEFAULT)
   const [sort, setSort] = useState('match')
   const [showFilters, setShowFilters] = useState(false)
   const [pop, setPop] = useState(null)
 
-  const list = useMemo(() => MEMBERS
-    .filter((m) => !blocked.includes(m.id) && !passed.includes(m.id))
+  useEffect(() => { setLiked(new Set(members.filter((m) => m.liked).map((m) => m.id))) }, [data]) // eslint-disable-line
+
+  const list = useMemo(() => members
+    .filter((m) => !passed.has(m.id))
     .filter((m) => m.age >= f.age[0] && m.age <= f.age[1])
     .filter((m) => f.gender === 'all' || m.gender === f.gender)
     .filter((m) => f.city === 'all' || m.city === f.city)
     .filter((m) => !f.verified || m.verified)
     .filter((m) => !f.online || m.online)
-    .sort((a, b) => sort === 'match' ? b.match - a.match : sort === 'young' ? a.age - b.age : Number(b.online) - Number(a.online)), [f, sort, blocked, passed])
+    .sort((a, b) => sort === 'match' ? b.match - a.match : sort === 'young' ? a.age - b.age : Number(b.online) - Number(a.online)), [members, f, sort, passed])
 
   const active = (f.age[0] !== 18 || f.age[1] !== 60) + (f.gender !== 'all') + (f.city !== 'all') + f.verified + f.online
-  const doLike = (m) => { if (liked.includes(m.id)) return; like(m.id); if (m.match >= 88) { setPop(m); setTimeout(() => setPop(null), 2600) } else toast(`You liked ${m.name}`) }
+
+  const doLike = async (m) => {
+    if (liked.has(m.id)) return
+    setLiked((s) => new Set(s).add(m.id))
+    try {
+      const r = await api('/members/' + m.id + '/like', { method: 'POST' })
+      if (r.matched) { setPop(m); setTimeout(() => setPop(null), 3000) } else toast(`You liked ${m.name}`)
+    } catch (e) { toast(e.message, 'err') }
+  }
+  const doPass = async (m) => {
+    setPassed((s) => new Set(s).add(m.id)); setPassCount((n) => n + 1)
+    toast(`Passed on ${m.name}`, 'info')
+    try { await api('/members/' + m.id + '/pass', { method: 'POST' }) } catch {}
+  }
+  const undoPasses = async () => { try { await api('/passes/clear', { method: 'POST' }) } catch {} setPassed(new Set()); setPassCount(0); reload() }
 
   return (
     <div className="page">
       <div className="page-h">
-        <div><h1>{t('h.discover')}</h1><p className="muted">{list.length} {list.length === 1 ? 'member matches' : 'members match'} your filters{passed.length > 0 && <> · <button className="link-btn" onClick={() => setPassed([])}>undo {passed.length} pass{passed.length > 1 ? 'es' : ''}</button></>}</p></div>
+        <div><h1>{t('h.discover')}</h1><p className="muted">{loading ? 'Loading members…' : <>{list.length} {list.length === 1 ? 'member matches' : 'members match'} your filters{passCount > 0 && <> · <button className="link-btn" onClick={undoPasses}>undo {passCount} pass{passCount > 1 ? 'es' : ''}</button></>}</>}</p></div>
         <div className="row-g">
           <select className="sel-s" value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort"><option value="match">Best match</option><option value="online">Online now</option><option value="young">Age: youngest</option></select>
           <button className="btn ghost sm filt-btn" onClick={() => setShowFilters(!showFilters)}><Icon name="sliders" size={15} /> {t('app.filters')}{active > 0 && <em className="count">{active}</em>}</button>
@@ -64,23 +88,23 @@ export default function Discover() {
         </aside>
 
         <div className="disc-main">
-          {list.length === 0 ? (
+          {!loading && list.length === 0 ? (
             <div className="empty card"><Icon name="search" size={32} /><h3>No one matches — yet</h3><p className="muted">Try widening the age range or picking another city.</p><button className="btn primary" onClick={() => setF(DEFAULT)}>{t('app.reset')} filters</button></div>
           ) : (
             <div className="mgrid">
-              {list.map((m) => { const isLiked = liked.includes(m.id); return (
+              {list.map((m) => { const isLiked = liked.has(m.id); return (
                 <article key={m.id} className={'mcard' + (isLiked ? ' liked' : '')}>
                   <Link to={'/app/members/' + m.id} className="mcard-img">
-                    <img src={'/img/' + m.photo} alt={m.name} loading="lazy" />
+                    <img src={photoUrl(m.photo)} alt={m.name} loading="lazy" />
                     <span className="mcard-match">{m.match}%</span>
                     {m.online && <span className="mcard-on"><i /> Online</span>}
                     {isLiked && <span className="mcard-heart"><Icon name="heart" size={18} fill="currentColor" stroke={0} /></span>}
                     <div className="mcard-info"><b>{m.name}, {m.age} {m.verified && <Icon name="verified" size={15} className="vf" />}</b><span><Icon name="pin" size={12} /> {m.city}</span></div>
                   </Link>
-                  <div className="mcard-tags">{m.interests.slice(0, 3).map((x) => <span key={x}>{x}</span>)}</div>
+                  <div className="mcard-tags">{(m.interests || []).slice(0, 3).map((x) => <span key={x}>{x}</span>)}</div>
                   <div className="mcard-a">
-                    <button className="ma pass sm" onClick={() => { pass(m.id); toast(`Passed on ${m.name}`, 'info') }} aria-label={t('btn.pass')} title={t('btn.pass')}><Icon name="x" size={18} /></button>
-                    <button className="btn ghost sm grow" onClick={() => nav('/app/messages/' + openThread(m.id))}><Icon name="chat" size={14} /> {t('btn.message')}</button>
+                    <button className="ma pass sm" onClick={() => doPass(m)} aria-label={t('btn.pass')} title={t('btn.pass')}><Icon name="x" size={18} /></button>
+                    <button className="btn ghost sm grow" onClick={() => nav('/app/messages/' + m.id)}><Icon name="chat" size={14} /> {t('btn.message')}</button>
                     <button className={'ma like sm' + (isLiked ? ' done' : '')} onClick={() => doLike(m)} aria-label={t('btn.like')} title={t('btn.like')}><Icon name="heart" size={18} fill="currentColor" stroke={0} /></button>
                   </div>
                 </article>
@@ -92,9 +116,9 @@ export default function Discover() {
       {pop && (
         <div className="match-pop" onClick={() => setPop(null)}>
           <div className="match-card">
-            <div className="hearts"><img src="/img/p-nadia.jpg" alt="" /><img src={'/img/' + pop.photo} alt="" /></div>
+            <div className="hearts"><img src={photoUrl(me.photo)} alt="" /><img src={photoUrl(pop.photo)} alt="" /></div>
             <h2>It's a match! 💙❤️</h2><p>You and {pop.name} liked each other.</p>
-            <button className="btn primary" onClick={() => nav('/app/messages/' + openThread(pop.id))}>Say bonjou</button>
+            <button className="btn primary" onClick={() => nav('/app/messages/' + pop.id)}>Say bonjou</button>
           </div>
         </div>
       )}

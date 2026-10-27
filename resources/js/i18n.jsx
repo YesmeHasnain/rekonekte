@@ -56,6 +56,24 @@ const dict = {
     'h.discover': 'Dekouvri', 'h.messages': 'Mesaj', 'h.community': 'Tablo kominote', 'h.events': 'Evènman', 'h.profile': 'Pwofil mwen', 'h.settings': 'Paramèt', 'h.admin': 'Tablo admin',
     'footer.tag': 'Lanmou · Kominote · Lakay',
   },
+  es: {
+    'nav.product': 'Producto', 'nav.features': 'Funciones', 'nav.community': 'Comunidad', 'nav.events': 'Eventos', 'nav.safety': 'Seguridad',
+    'nav.login': 'Iniciar sesión', 'nav.join': 'Únete gratis', 'nav.openApp': 'Abrir app',
+    'hero.eyebrow': 'Kominote OS · para la diáspora haitiana',
+    'hero.title1': 'Encuentra a tu persona.', 'hero.title2': 'Encuentra a tu gente.',
+    'hero.sub': 'Rekonekte es un solo hogar para el amor y la comunidad: ten citas con intención, chatea con seguridad y conéctate con la vida haitiana en tu ciudad, de Miami a Montreal.',
+    'hero.cta': 'Crea tu perfil', 'hero.cta2': 'Echa un vistazo',
+    'tab.discover': 'Descubrir', 'tab.messages': 'Mensajes', 'tab.community': 'Comunidad',
+    'sec.bento': 'Todo lakay, en un solo lugar', 'sec.build': 'Crea tu perfil en un minuto', 'sec.how': 'De bonjou a lakay',
+    'sec.community': 'Más que citas — una kominote', 'sec.events': 'Cerca de ti', 'sec.safety': 'La seguridad es una función, no una nota al pie',
+    'sec.stories': 'Historias de Rekonekte', 'sec.faq': 'Preguntas, respondidas', 'sec.cta': 'Tu gente te espera.',
+    'side.discover': 'Descubrir', 'side.messages': 'Mensajes', 'side.community': 'Comunidad', 'side.events': 'Eventos', 'side.profile': 'Perfil', 'side.settings': 'Ajustes', 'side.admin': 'Admin',
+    'app.search': 'Buscar miembros, publicaciones, eventos…', 'app.filters': 'Filtros', 'app.age': 'Edad', 'app.gender': 'Mostrarme', 'app.city': 'Ciudad', 'app.reset': 'Restablecer',
+    'btn.like': 'Me gusta', 'btn.pass': 'Pasar', 'btn.message': 'Mensaje', 'btn.send': 'Enviar', 'btn.block': 'Bloquear', 'btn.report': 'Reportar', 'btn.save': 'Guardar cambios', 'btn.edit': 'Editar perfil', 'btn.post': 'Publicar', 'btn.newPost': 'Nueva publicación', 'btn.rsvp': 'Confirmar', 'btn.going': 'Asistiré', 'btn.logout': 'Cerrar sesión',
+    'auth.loginTitle': 'Bon retou! Bienvenido de nuevo', 'auth.registerTitle': 'Únete a la kominote', 'auth.verifyTitle': 'Revisa tu correo', 'auth.resetTitle': 'Restablece tu contraseña',
+    'h.discover': 'Descubrir', 'h.messages': 'Mensajes', 'h.community': 'Tablón de la comunidad', 'h.events': 'Eventos', 'h.profile': 'Mi perfil', 'h.settings': 'Ajustes', 'h.admin': 'Panel de administración',
+    'footer.tag': 'Amor · Comunidad · Hogar',
+  },
 }
 
 const I18n = createContext({ lang: 'en', setLang: () => {}, t: (k) => k })
@@ -67,7 +85,7 @@ export function I18nProvider({ children }) {
   return <I18n.Provider value={{ lang, setLang, t }}>{children}</I18n.Provider>
 }
 export const useI18n = () => useContext(I18n)
-export const LANGS = [{ id: 'en', label: 'EN', name: 'English' }, { id: 'fr', label: 'FR', name: 'Français' }, { id: 'ht', label: 'HT', name: 'Kreyòl' }]
+export const LANGS = [{ id: 'en', label: 'EN', name: 'English' }, { id: 'fr', label: 'FR', name: 'Français' }, { id: 'ht', label: 'HT', name: 'Kreyòl' }, { id: 'es', label: 'ES', name: 'Español' }]
 
 /** Public-site copy: tr('English text') -> the current language's version (falls back to English). */
 export function useTr() {
