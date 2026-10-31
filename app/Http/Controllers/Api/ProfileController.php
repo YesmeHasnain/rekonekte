@@ -7,8 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Like;
 use App\Models\Photo;
 use App\Models\Profile;
+use App\Support\ImageUpload;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 /**
  * The signed-in member's own profile: view (with a few stats), edit the basics,
@@ -22,13 +22,12 @@ class ProfileController extends Controller
     public function show(Request $request)
     {
         $me = $request->user();
-        $likesReceived = Like::where('liked_id', $me->id)->count();
 
         return [
             'me' => $this->presentMember($me, $me),
             'showInDiscover' => (bool) ($me->profile?->show_in_discover ?? true),
             'stats' => [
-                'views' => 48 + $likesReceived * 7,
+                'likedBy' => Like::where('liked_id', $me->id)->count(),
                 'likes' => Like::where('liker_id', $me->id)->count(),
                 'events' => $me->events()->count(),
             ],
@@ -96,22 +95,10 @@ class ProfileController extends Controller
         $me = $request->user();
         $data = $request->validate(['image' => ['required', 'string']]);
 
-        if (! preg_match('/^data:image\/(\w+);base64,(.+)$/', $data['image'], $m)) {
-            return response()->json(['message' => 'Please choose an image file.'], 422);
+        $path = ImageUpload::store($data['image'], 'avatars', 'u'.$me->id.'-');
+        if ($path === null) {
+            return response()->json(['message' => 'Please choose a JPG, PNG, WebP or GIF image under 8 MB.'], 422);
         }
-        $ext = $m[1] === 'jpeg' ? 'jpg' : $m[1];
-        $bytes = base64_decode($m[2], true);
-        if ($bytes === false || strlen($bytes) > 8 * 1024 * 1024) {
-            return response()->json(['message' => 'That photo is too large (8 MB max).'], 422);
-        }
-
-        $dir = public_path('uploads/avatars');
-        if (! is_dir($dir)) {
-            @mkdir($dir, 0755, true);
-        }
-        $name = 'u'.$me->id.'-'.Str::random(16).'.'.$ext;
-        file_put_contents($dir.'/'.$name, $bytes);
-        $path = '/uploads/avatars/'.$name;
 
         // New photo becomes the primary; older ones step down.
         Photo::where('user_id', $me->id)->update(['is_primary' => false]);

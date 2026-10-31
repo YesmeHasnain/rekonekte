@@ -1,0 +1,4 @@
+# Member uploads are images only: nothing in here may ever run as a script.
+<FilesMatch "\.(?i:php\d*|phtml|phar|pl|py|cgi|shtml|htaccess)$">
+    Require all denied
+</FilesMatch>

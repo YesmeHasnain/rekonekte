@@ -3,7 +3,7 @@
 **Lanmou · Kominote · Lakay.** A dating and community platform for the Haitian diaspora.
 
 This repository covers **Phase 1 (website MVP)** as described in the signed quotation.
-This drop completes **Milestone 1: Planning, UI/UX & Setup**.
+Milestones 1 and 2 are complete. Milestone 3 (final testing, legal text, translations and handover) is in progress.
 
 ## Stack
 
@@ -59,7 +59,7 @@ Login attempts are rate-limited, and verification and reset codes are stored has
 
 Point the domain's document root at `public/`. If the host's default PHP is older than 8.4, select PHP 8.4 for the domain. On cPanel without MultiPHP you can add `AddHandler application/x-httpd-ea-php84 .php` to `public/.htaccess`. Use `MAIL_MAILER=sendmail` (or SMTP) so the verification and reset codes get delivered.
 
-> Most screens still use demo data from `resources/js/data.js`. Milestone 2 connects each screen to the database. That covers accounts and email verification, profiles and photo upload, matching, messaging, block and report, community, events and the admin dashboard.
+All app screens read and write the database through the API. Members-only endpoints also require a verified email and an active (not suspended) account, enforced on the server by `app/Http/Middleware/EnsureActiveMember.php`.
 
 ## Run it locally
 
@@ -75,6 +75,8 @@ npm run build                   # or: npm run dev  (hot reload)
 php artisan serve               # http://127.0.0.1:8000
 ```
 
+Run the automated tests with `php artisan test`. They use an in-memory SQLite database and cover the agreed MVP features through the API (`tests/Feature/MvpTest.php`).
+
 Demo accounts, all with the password `password`:
 - **Admin:** `admin@rekonekte.com`
 - **Members:** `daniela@example.com`, `nadia@example.com`, `jean@example.com` and others
@@ -83,8 +85,8 @@ Demo accounts, all with the password `password`:
 
 | # | Milestone | Status |
 | --- | --- | --- |
-| 1 | Planning, UI/UX & setup | ✅ Delivered (this drop) |
-| 2 | Core website development: accounts, profiles and photos, matching, messaging, safety, community, admin | Next |
-| 3 | Testing, refinements, legal pages, final language labels, deployment and handover | — |
+| 1 | Planning, UI/UX & setup | ✅ Delivered |
+| 2 | Core website development: accounts, profiles and photos, matching, messaging, safety, community, events management, admin | ✅ Complete |
+| 3 | Testing, refinements, legal pages, final language labels, deployment and handover | In progress |
 
 Client to supply: final Privacy Policy and Terms of Service text, and approved FR/HT translations.

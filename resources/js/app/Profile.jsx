@@ -14,7 +14,7 @@ export function MyProfile() {
   const { t } = useI18n()
   const { me } = useStore()
   const { data } = useApi('/profile')
-  const stats = data?.stats ?? { views: 0, likes: 0, events: 0 }
+  const stats = data?.stats ?? { likedBy: 0, likes: 0, events: 0 }
   const p = data?.me ?? me
   const complete = Math.min(100, 30 + ((p.bio?.length || 0) > 40 ? 20 : 0) + (p.interests?.length || 0) * 6 + (p.langs?.length || 0) * 5 + (p.photo ? 10 : 0))
   return (
@@ -32,7 +32,7 @@ export function MyProfile() {
             <h4>Languages</h4><div className="chips">{(p.langs || []).map((x) => <span key={x} className="chip"><Icon name="globe" size={12} /> {x}</span>)}</div>
           </div>
           <div className="mini-stats">
-            <div className="card"><b>{stats.views}</b><span>Profile views this week</span></div>
+            <div className="card"><b>{stats.likedBy}</b><span>People who liked you</span></div>
             <div className="card"><b>{stats.likes}</b><span>People you liked</span></div>
             <div className="card"><b>{stats.events}</b><span>Events you're going to</span></div>
           </div>

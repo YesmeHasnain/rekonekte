@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Conversation;
 use App\Models\Like;
 use App\Models\Message;
+use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -53,10 +54,23 @@ class NotificationController extends Controller
                         'who' => $u->profile?->display_name ?? $u->name,
                         'action' => 'sent you a message',
                         'at' => $m->created_at,
-                        'to' => '/app/messages/'.$cid,
+                        'to' => '/app/messages/'.$m->sender_id,
                         'unread' => $m->read_at === null,
                     ]);
                 }
+            });
+
+        // Warnings from the moderators.
+        Report::where(['reportable_type' => User::class, 'reportable_id' => $me->id, 'status' => 'warned'])
+            ->latest('resolved_at')->limit(3)->get()->each(function (Report $r) use (&$items) {
+                $items->push([
+                    'id' => 'warn-'.$r->id,
+                    'photo' => null,
+                    'who' => 'Rekonekte moderators',
+                    'action' => 'sent you a community guidelines warning',
+                    'at' => $r->resolved_at,
+                    'to' => '/terms',
+                ]);
             });
 
         $sorted = $items->sortByDesc('at')->take(10)->values()->map(function ($n) {

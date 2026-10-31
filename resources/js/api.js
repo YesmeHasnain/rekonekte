@@ -35,6 +35,7 @@ export async function api(path, { method = 'GET', body } = {}) {
   })
   if (res.status === 419) { csrfReady = null } // stale CSRF token: next call fetches a fresh one
   const data = res.status === 204 ? null : await res.json().catch(() => null)
+  if (data?.suspended) window.location.assign('/login') // the session has just been ended
   if (!res.ok) throw new ApiError(res.status, data)
   return data
 }

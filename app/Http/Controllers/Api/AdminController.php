@@ -8,6 +8,8 @@ use App\Models\Report;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 /**
  * Admin dashboard (quotation §1, "admin/moderation panel"): community health
@@ -68,6 +70,7 @@ class AdminController extends Controller
     public function setUserStatus(Request $request, User $user)
     {
         $this->gate($request);
+        abort_if($user->role !== 'member', 422, 'Only member accounts can be managed here.');
         $data = $request->validate(['status' => ['required', 'in:active,suspended']]);
 
         if ($data['status'] === 'suspended') {
@@ -117,6 +120,10 @@ class AdminController extends Controller
         $map = ['dismiss' => 'dismissed', 'warn' => 'warned', 'suspend' => 'suspended'];
         $report->forceFill(['status' => $map[$data['action']], 'resolved_by' => $request->user()->id, 'resolved_at' => now()])->save();
 
+        if ($data['action'] === 'warn' && $report->reportable instanceof User) {
+            $this->sendWarning($report->reportable);
+        }
+
         if ($data['action'] === 'suspend' && $report->reportable instanceof User) {
             $report->reportable->forceFill(['suspended_at' => now(), 'suspension_reason' => 'Suspended after report'])->save();
         }
@@ -128,10 +135,18 @@ class AdminController extends Controller
     {
         $this->gate($request);
 
-        $posts = Post::where('status', 'pending')->with(['user.profile', 'user.photos'])
-            ->orderByDesc('created_at')->limit(100)->get();
+        $query = fn (string $status, int $limit) => Post::where('status', $status)->with(['user.profile', 'user.photos'])
+            ->orderByDesc('created_at')->limit($limit)->get();
 
-        return ['queue' => $posts->map(function (Post $p) {
+        return [
+            'queue' => $this->presentPosts($query('pending', 100)),
+            'published' => $this->presentPosts($query('approved', 50)),
+        ];
+    }
+
+    private function presentPosts($posts)
+    {
+        return $posts->map(function (Post $p) {
             $flags = Report::where('reportable_type', Post::class)->where('reportable_id', $p->id)->count();
 
             return [
@@ -146,7 +161,7 @@ class AdminController extends Controller
                 'time' => $p->created_at?->diffForHumans(),
                 'flags' => $flags,
             ];
-        })->values()];
+        })->values();
     }
 
     public function moderatePost(Request $request, Post $post)
@@ -161,5 +176,18 @@ class AdminController extends Controller
         ])->save();
 
         return ['status' => $post->status];
+    }
+
+    private function sendWarning(User $user): void
+    {
+        $name = $user->profile?->display_name ?? $user->name;
+        $body = "Bonjou {$name},\n\nOur moderators reviewed a report about your account and this is a formal warning. Please follow the community guidelines. Further reports may lead to suspension.\n\nLanmou · Kominote · Lakay\nRekonekte";
+
+        try {
+            Mail::raw($body, fn ($m) => $m->to($user->email)->subject('A warning about your Rekonekte account'));
+        } catch (\Throwable $e) {
+            // The warning still shows in the member's notifications.
+            Log::warning('Rekonekte warning email failed', ['user' => $user->id, 'error' => $e->getMessage()]);
+        }
     }
 }

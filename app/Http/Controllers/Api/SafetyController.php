@@ -45,6 +45,7 @@ class SafetyController extends Controller
     public function report(Request $request, User $user)
     {
         $me = $request->user();
+        abort_if($user->id === $me->id, 422, 'You cannot report yourself.');
         $data = $request->validate([
             'reason' => ['required', 'string', 'max:60'],
             'details' => ['nullable', 'string', 'max:1000'],

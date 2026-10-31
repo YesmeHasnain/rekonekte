@@ -52,7 +52,7 @@ class AuthController extends Controller
             'password' => $data['password'],
             'date_of_birth' => $data['date_of_birth'],
             'adult_confirmed_at' => Carbon::now(),
-            'locale' => in_array($request->header('X-Locale'), ['en', 'fr', 'ht'], true) ? $request->header('X-Locale') : 'en',
+            'locale' => in_array($request->header('X-Locale'), ['en', 'fr', 'ht', 'es'], true) ? $request->header('X-Locale') : 'en',
             'last_seen_at' => Carbon::now(),
         ]);
         Profile::create([

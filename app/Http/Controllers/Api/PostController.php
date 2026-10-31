@@ -7,6 +7,7 @@ use App\Models\Comment;
 use App\Models\Post;
 use App\Models\PostLike;
 use App\Models\User;
+use App\Support\ImageUpload;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -49,7 +50,10 @@ class PostController extends Controller
 
         $imagePath = null;
         if (! empty($data['image']) && Str::startsWith($data['image'], 'data:image')) {
-            $imagePath = $this->storeDataUrl($data['image'], 'posts');
+            $imagePath = ImageUpload::store($data['image'], 'posts');
+            if ($imagePath === null) {
+                return response()->json(['message' => 'Please choose a JPG, PNG, WebP or GIF image under 8 MB.'], 422);
+            }
         }
 
         // Keep the kominote safe: obvious scams go straight to the queue; the
@@ -72,6 +76,7 @@ class PostController extends Controller
     public function like(Request $request, Post $post)
     {
         $me = $request->user();
+        $this->abortUnlessVisible($post, $me);
         $existing = PostLike::where(['post_id' => $post->id, 'user_id' => $me->id])->first();
         if ($existing) {
             $existing->delete();
@@ -86,12 +91,17 @@ class PostController extends Controller
 
     public function comments(Request $request, Post $post)
     {
+        $me = $request->user();
+        $this->abortUnlessVisible($post, $me);
+
         return ['comments' => $post->comments()->with('user.profile', 'user.photos')
+            ->whereNotIn('user_id', $me->hiddenUserIds())
             ->orderBy('created_at')->get()->map(fn (Comment $c) => $this->presentComment($c))->values()];
     }
 
     public function comment(Request $request, Post $post)
     {
+        $this->abortUnlessVisible($post, $request->user());
         $data = $request->validate(['body' => ['required', 'string', 'max:500']]);
         $c = Comment::create(['post_id' => $post->id, 'user_id' => $request->user()->id, 'body' => $data['body']]);
         $c->loadMissing('user.profile', 'user.photos');
@@ -100,6 +110,13 @@ class PostController extends Controller
     }
 
     // ------------------------------------------------------------------
+
+    /** Same rule as the feed: approved posts, or my own, and never a blocked member's. */
+    private function abortUnlessVisible(Post $post, User $me): void
+    {
+        abort_if(in_array($post->user_id, $me->hiddenUserIds(), true), 404);
+        abort_unless($post->status === 'approved' || $post->user_id === $me->id, 404);
+    }
 
     private function present(Post $p, bool $liked): array
     {
@@ -167,25 +184,5 @@ class PostController extends Controller
         }
 
         return false;
-    }
-
-    private function storeDataUrl(string $dataUrl, string $folder): ?string
-    {
-        if (! preg_match('/^data:image\/(\w+);base64,(.+)$/', $dataUrl, $m)) {
-            return null;
-        }
-        $ext = $m[1] === 'jpeg' ? 'jpg' : $m[1];
-        $bytes = base64_decode($m[2], true);
-        if ($bytes === false || strlen($bytes) > 8 * 1024 * 1024) {
-            return null;
-        }
-        $dir = public_path('uploads/'.$folder);
-        if (! is_dir($dir)) {
-            @mkdir($dir, 0755, true);
-        }
-        $name = Str::random(24).'.'.$ext;
-        file_put_contents($dir.'/'.$name, $bytes);
-
-        return '/uploads/'.$folder.'/'.$name;
     }
 }

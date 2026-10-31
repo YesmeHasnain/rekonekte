@@ -27,6 +27,7 @@ class EventController extends Controller
 
     public function rsvp(Request $request, Event $event)
     {
+        abort_unless($event->status === 'published', 404);
         $me = $request->user();
         if ($me->events()->where('events.id', $event->id)->exists()) {
             $me->events()->detach($event->id);
@@ -44,6 +45,7 @@ class EventController extends Controller
         return [
             'id' => $e->id,
             'title' => $e->title,
+            'description' => $e->description,
             'date' => $e->starts_at->format('D, M j'),
             'time' => $e->starts_at->format('g:i A'),
             'city' => $e->city,

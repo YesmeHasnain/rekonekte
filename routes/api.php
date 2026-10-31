@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AdminController;
+use App\Http\Controllers\Api\AdminEventController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EventController;
 use App\Http\Controllers\Api\InteractionController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SafetyController;
+use App\Http\Middleware\EnsureActiveMember;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -30,7 +32,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/email/verify', [AuthController::class, 'verifyEmail'])->middleware('throttle:10,1');
     Route::post('/email/resend', [AuthController::class, 'resendVerification'])->middleware('throttle:3,1');
+});
 
+// The app itself: signed in, email verified and not suspended.
+Route::middleware(['auth:sanctum', EnsureActiveMember::class])->group(function () {
     // Discover + matching.
     Route::get('/members', [MemberController::class, 'index']);
     Route::get('/members/{user}', [MemberController::class, 'show']);
@@ -80,5 +85,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/reports/{report}/resolve', [AdminController::class, 'resolveReport']);
         Route::get('/queue', [AdminController::class, 'queue']);
         Route::post('/posts/{post}/moderate', [AdminController::class, 'moderatePost']);
+        Route::get('/events', [AdminEventController::class, 'index']);
+        Route::post('/events', [AdminEventController::class, 'store']);
+        Route::put('/events/{event}', [AdminEventController::class, 'update']);
+        Route::delete('/events/{event}', [AdminEventController::class, 'destroy']);
     });
 });

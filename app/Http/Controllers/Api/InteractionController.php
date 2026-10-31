@@ -21,6 +21,7 @@ class InteractionController extends Controller
     {
         $me = $request->user();
         abort_if($user->id === $me->id, 422, 'You cannot like yourself.');
+        abort_if($user->role !== 'member' || $user->isSuspended() || in_array($user->id, $me->hiddenUserIds(), true), 404);
 
         Like::firstOrCreate(['liker_id' => $me->id, 'liked_id' => $user->id]);
         Pass::where(['user_id' => $me->id, 'passed_id' => $user->id])->delete();
