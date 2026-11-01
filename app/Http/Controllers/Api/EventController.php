@@ -25,6 +25,26 @@ class EventController extends Controller
         return ['events' => $events->map(fn (Event $e) => $this->present($e, in_array($e->id, $mine, true)))->values()];
     }
 
+    /** One event for its detail page, with a sample of who is going. */
+    public function show(Request $request, Event $event)
+    {
+        abort_unless($event->status === 'published', 404);
+        $me = $request->user();
+        $event->loadCount('attendees');
+
+        $attendees = $event->attendees()->with(['profile', 'photos'])
+            ->whereNotIn('users.id', $me->hiddenUserIds())->limit(8)->get();
+
+        return ['event' => [
+            ...$this->present($event, $me->events()->where('events.id', $event->id)->exists()),
+            'attendees' => $attendees->map(fn ($u) => [
+                'id' => $u->id,
+                'name' => $u->profile?->display_name ?? $u->name,
+                'photo' => optional($u->photos->firstWhere('is_primary', true))->path ?? optional($u->photos->first())->path,
+            ])->values(),
+        ]];
+    }
+
     public function rsvp(Request $request, Event $event)
     {
         abort_unless($event->status === 'published', 404);
@@ -47,7 +67,7 @@ class EventController extends Controller
             'title' => $e->title,
             'description' => $e->description,
             'date' => $e->starts_at->format('D, M j'),
-            'time' => $e->starts_at->format('g:i A'),
+            'time' => $e->starts_at->format('g:i A').($e->ends_at ? ' – '.$e->ends_at->format('g:i A') : ''),
             'city' => $e->city,
             'venue' => $e->venue,
             'image' => $e->image_path,

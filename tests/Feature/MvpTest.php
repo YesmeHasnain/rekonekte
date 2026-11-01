@@ -312,6 +312,18 @@ class MvpTest extends TestCase
         $this->getJson('/api/posts')->assertOk()->assertJsonPath('posts.0.comments', 1)->assertJsonPath('posts.0.liked', true);
     }
 
+    public function test_post_times_are_whole_minutes_and_hours(): void
+    {
+        $me = $this->member();
+        $post = Post::create(['user_id' => $me->id, 'category' => 'food', 'body' => 'Hi', 'status' => 'approved']);
+
+        $post->forceFill(['created_at' => now()->subSeconds(150)])->saveQuietly();
+        $this->actingAs($me)->getJson('/api/posts')->assertJsonPath('posts.0.time', '2m');
+
+        $post->forceFill(['created_at' => now()->subMinutes(190)])->saveQuietly();
+        $this->getJson('/api/posts')->assertJsonPath('posts.0.time', '3h');
+    }
+
     public function test_scam_post_waits_for_a_moderator_and_stays_hidden_until_approved(): void
     {
         $author = $this->member();
@@ -371,6 +383,58 @@ class MvpTest extends TestCase
         $this->actingAs($this->admin())->postJson('/api/admin/events', [
             'title' => 'X', 'starts_at' => '2027-01-02 20:00:00', 'ends_at' => '2027-01-02 19:00:00', 'status' => 'published',
         ])->assertStatus(422)->assertJsonValidationErrors('ends_at');
+    }
+
+    public function test_event_detail_shows_who_is_going_and_hides_unpublished_events(): void
+    {
+        $me = $this->member();
+        $going = $this->member();
+        $blocked = $this->member();
+        Block::create(['blocker_id' => $me->id, 'blocked_id' => $blocked->id]);
+        $event = Event::create(['user_id' => $me->id, 'title' => 'Fete', 'starts_at' => now()->addDay(), 'status' => 'published']);
+        $event->attendees()->attach([$going->id, $blocked->id]);
+        $draft = Event::create(['user_id' => $me->id, 'title' => 'Draft', 'starts_at' => now()->addDay(), 'status' => 'draft']);
+
+        $this->actingAs($me)->getJson("/api/events/{$event->id}")->assertOk()
+            ->assertJsonPath('event.going', 2)->assertJsonCount(1, 'event.attendees')
+            ->assertJsonPath('event.attendees.0.id', $going->id);
+        $this->getJson("/api/events/{$draft->id}")->assertNotFound();
+    }
+
+    // --- Groups ----------------------------------------------------------
+
+    public function test_groups_show_real_member_counts_and_can_be_joined_and_left(): void
+    {
+        $me = $this->member();
+        $id = $this->actingAs($me)->getJson('/api/groups')->assertOk()
+            ->assertJsonPath('groups.0.name', 'Haitian Diaspora')->assertJsonPath('groups.0.members', 0)->json('groups.0.id');
+
+        $this->postJson("/api/groups/$id/join")->assertOk()->assertJson(['joined' => true, 'members' => 1]);
+        $this->getJson('/api/groups')->assertJsonPath('groups.0.joined', true);
+        $this->postJson("/api/groups/$id/join")->assertOk()->assertJson(['joined' => false, 'members' => 0]);
+    }
+
+    public function test_a_member_can_start_a_group_and_only_an_admin_can_delete_it(): void
+    {
+        $me = $this->member();
+        $id = $this->actingAs($me)->postJson('/api/groups', ['name' => 'Kompa Lovers', 'description' => 'Tout moun'])
+            ->assertCreated()->assertJsonPath('group.members', 1)->assertJsonPath('group.joined', true)->json('group.id');
+
+        $this->postJson('/api/groups', ['name' => 'Kompa Lovers'])->assertStatus(422);
+        $this->deleteJson("/api/admin/groups/$id")->assertForbidden();
+        $this->actingAs($this->admin())->deleteJson("/api/admin/groups/$id")->assertNoContent();
+    }
+
+    public function test_culture_is_saved_and_reaches_discover(): void
+    {
+        $me = $this->member();
+        $this->actingAs($me)->putJson('/api/profile', ['name' => 'N', 'culture' => 'caribbean'])->assertOk()->assertJsonPath('me.culture', 'caribbean');
+        $this->putJson('/api/profile', ['name' => 'N', 'culture' => 'mars'])->assertStatus(422);
+    }
+
+    public function test_new_community_categories_are_accepted(): void
+    {
+        $this->actingAs($this->member())->postJson('/api/posts', ['body' => 'Plumber in Miami', 'category' => 'services'])->assertCreated();
     }
 
     // --- Admin -----------------------------------------------------------

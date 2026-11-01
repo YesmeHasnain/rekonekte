@@ -11,6 +11,7 @@ import './styles/pages.css'
 import './styles/app.css'
 import './styles/heart.css'
 import './styles/luxe.css'
+import './styles/mock.css'
 
 initPwa()
 

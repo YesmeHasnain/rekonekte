@@ -53,6 +53,13 @@ const P = {
   star: 'M12 2.8l2.8 5.8 6.4.9-4.6 4.5 1.1 6.3L12 17.3l-5.7 3 1.1-6.3-4.6-4.5 6.4-.9L12 2.8Z',
   briefcase: 'M3 7h18v13H3zM8 7V4h8v3M3 13h18',
   chevron: 'm6 9 6 6 6-6',
+  home: 'M3 11l9-8 9 8M5 9.500V21h5v-6h4v6h5V9.500',
+  house: 'M3 11l9-8 9 8M5 9.500V21h14V9.500M10 21v-6h4v6',
+  bookmark: 'M6 3h12a1 1 0 0 1 1 1v17l-7-5-7 5V4a1 1 0 0 1 1-1Z',
+  utensils: 'M7 2v20M4 2v6a3 3 0 0 0 6 0V2M17 22v-8M17 14c-2 0-3-2-3-6s1.500-6 3-6v12Z',
+  wrench: 'M14.700 6.300a4 4 0 0 0 5.300 5.300L13 19a3 3 0 0 1-4-4l5.700-8.700ZM18 2l-3 3 1 3 3 1 3-3',
+  plane: 'M21 3 3 10l7 3 3 7 8-17ZM10 13l4-4',
+  palette: 'M12 3a9 9 0 1 0 0 18c1.500 0 2-1 2-2s-1-2 0-3 2-.500 3-.500c2.500 0 4-1.500 4-3.500 0-5-4-9-9-9ZM7.500 12h.010M9.500 7.500h.010M14.500 7.500h.010',
   cmd: 'M18 3a3 3 0 0 0-3 3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 0 0 0-6Z',
 }
 
@@ -64,10 +71,14 @@ export function Icon({ name, size = 18, fill = 'none', stroke = 2, className = '
   )
 }
 
-export function Logo({ to = '/', small, light }) {
+const HEART_MARK = 'M24 41C10 31 4 23 4 15 4 8.5 9 4 15 4c4 0 7 2 9 5 2-3 5-5 9-5 6 0 11 4.5 11 11 0 8-6 16-20 26Z'
+const HEART_IN = 'M24 31c-7-5-10-9-10-13 0-3 2.300-5 5-5 2 0 4 1 5 3 1-2 3-3 5-3 2.700 0 5 2 5 5 0 4-3 8-10 13Z'
+
+export function Logo({ to = '/', light, big, stack }) {
   return (
-    <Link to={to} className={'logo' + (small ? ' logo-sm' : '')} aria-label="Rekonekte home">
-      <img src={light ? '/img/logo-h-light.png' : '/img/logo-h.png'} alt="Rekonekte" width="162" height="40" />
+    <Link to={to} className={'mk-logo' + (light ? ' light' : '') + (big ? ' big' : '') + (stack ? ' stack' : '')} aria-label="Rekonekte home">
+      <svg viewBox="0 0 48 45" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinejoin="round" aria-hidden="true"><path d={HEART_MARK} /><path d={HEART_IN} strokeWidth="2.6" /></svg>
+      <b>Rekonekte</b>
     </Link>
   )
 }

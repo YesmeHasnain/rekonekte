@@ -1,71 +1,34 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
-import { useI18n, useTr, LANGS } from '../i18n.jsx'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { useTr } from '../i18n.jsx'
 import { Icon, LangSwitch, Logo } from './ui.jsx'
 
-const NAV = [['/', 'Home'], ['/#dating', 'Dating'], ['/#community', 'Community'], ['/#live', 'Live Shows'], ['/#pricing', 'Pricing']]
-
-function LangMenu() {
-  const { lang, setLang } = useI18n()
-  const [open, setOpen] = useState(false)
-  const ref = useRef(null)
-  useEffect(() => {
-    if (!open) return
-    const f = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false) }
-    document.addEventListener('mousedown', f)
-    return () => document.removeEventListener('mousedown', f)
-  }, [open])
-  const cur = LANGS.find((l) => l.id === lang) || LANGS[0]
-  return (
-    <div className="lmenu" ref={ref}>
-      <button className="lmenu-btn" onClick={() => setOpen(!open)} aria-haspopup="listbox" aria-expanded={open}>
-        <Icon name="globe" size={17} /> {cur.label} <Icon name="chevron" size={14} />
-      </button>
-      {open && (
-        <div className="dropdown menu lmenu-dd" role="listbox">
-          {LANGS.map((l) => (
-            <button key={l.id} role="option" aria-selected={l.id === lang} onClick={() => { setLang(l.id); setOpen(false) }}>
-              <span className="lmenu-code">{l.label}</span> {l.name} {l.id === lang && <Icon name="check" size={15} className="lmenu-ok" />}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
+const NAV = [['/', 'Home'], ['/app/home', 'Dating'], ['/app/community', 'Community'], ['/app/events', 'Events'], ['/app/discover', 'Discover']]
 
 export function PublicNav() {
   const tr = useTr()
-  const { pathname, hash } = useLocation()
-  const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
-  useEffect(() => {
-    const f = () => setScrolled(window.scrollY > 8)
-    f(); window.addEventListener('scroll', f, { passive: true })
-    return () => window.removeEventListener('scroll', f)
-  }, [])
   useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; return () => { document.body.style.overflow = '' } }, [open])
-  const isOn = (h) => (h === '/' ? pathname === '/' && !hash : h === '/' + hash)
   return (
-    <header className={'nav' + (scrolled ? ' scrolled' : '') + (open ? ' open' : '')}>
-      <div className="wrap nav-in">
+    <header className={'mk-nav nav' + (open ? ' open' : '')}>
+      <div className="mk-nav-in">
         <Logo />
-        <nav className="nav-links" aria-label="Main">
-          {NAV.map(([h, l]) => <Link key={h} to={h} className={isOn(h) ? 'on' : ''}>{tr(l)}</Link>)}
+        <nav className="mk-nav-links" aria-label="Main">
+          {NAV.map(([h, l]) => <Link key={h} to={h}>{tr(l)}</Link>)}
         </nav>
-        <div className="nav-r">
-          <LangMenu />
-          <Link to="/login" className="btn outline sm hide-m">{tr('Login')}</Link>
-          <Link to="/register" className="btn primary sm hide-m">{tr('Get Started')}</Link>
-          <button className="icon-btn burger" onClick={() => setOpen(!open)} aria-label="Menu" aria-expanded={open}><Icon name={open ? 'x' : 'menu'} size={22} /></button>
+        <div className="mk-nav-r">
+          <Link to="/app/discover" className="ic-s hide-s" aria-label="Search"><Icon name="search" size={20} /></Link>
+          <Link to="/login" className="mk-btn line hide-s">{tr('Log In')}</Link>
+          <Link to="/register" className="mk-btn fill">{tr('Join Free')}</Link>
+          <button className="icon-btn mk-burger burger" onClick={() => setOpen(!open)} aria-label="Menu" aria-expanded={open}><Icon name={open ? 'x' : 'menu'} size={22} /></button>
         </div>
       </div>
       <div className="nav-drawer">
         {NAV.map(([h, l]) => <Link key={h} to={h} onClick={() => setOpen(false)}>{tr(l)} <Icon name="arrow" size={16} /></Link>)}
         <LangSwitch />
         <div className="nav-drawer-cta">
-          <Link to="/login" className="btn outline lg">{tr('Login')}</Link>
-          <Link to="/register" className="btn primary lg">{tr('Get Started')}</Link>
+          <Link to="/login" className="btn outline lg">{tr('Log In')}</Link>
+          <Link to="/register" className="btn primary lg">{tr('Join Free')}</Link>
         </div>
       </div>
     </header>
@@ -83,43 +46,25 @@ export function SocialIcon({ name, size = 16 }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d={SOCIAL[name]} /></svg>
 }
 
-export function Newsletter() {
-  const tr = useTr()
-  const [done, setDone] = useState(false)
-  return done ? (
-    <p className="news-ok"><Icon name="check" size={16} /> {tr('Mèsi! We’ll keep you posted.')}</p>
-  ) : (
-    <form className="news" onSubmit={(e) => { e.preventDefault(); setDone(true) }}>
-      <label htmlFor="news-email">{tr('Get Rekonekte news')}</label>
-      <div className="news-row">
-        <input id="news-email" type="email" required placeholder={tr('Your email address')} />
-        <button className="btn primary">{tr('Join')}</button>
-      </div>
-    </form>
-  )
-}
-
 export function Footer() {
   const tr = useTr()
   return (
-    <footer className="foot">
-      <div className="wrap foot-grid">
-        <div className="foot-brand">
+    <footer className="mk-foot">
+      <div className="mk-foot-in">
+        <div>
           <Logo light />
-          <p className="sig sig-foot">Lanmou · Kominote · Lakay</p>
-          <p className="foot-about">{tr('The dating and community home made by and for the Haitian diaspora — from Port-au-Prince to Paris.')}</p>
+          <div className="mk-foot-soc">{['instagram', 'facebook', 'x', 'tiktok', 'youtube'].map((s) => <a key={s} href="#" aria-label={s} onClick={(e) => e.preventDefault()}><SocialIcon name={s} size={18} /></a>)}</div>
         </div>
-        <div className="foot-col"><h5>{tr('Quick Links')}</h5><Link to="/">{tr('Home')}</Link><Link to="/#dating">{tr('Dating')}</Link><Link to="/#community">{tr('Community')}</Link><Link to="/#live">{tr('Live Shows')}</Link><Link to="/#pricing">{tr('Pricing')}</Link></div>
-        <div className="foot-col"><h5>{tr('Support')}</h5><a href="mailto:help@rekonekte.com">{tr('Help Center')}</a><Link to="/app/settings">{tr('Safety')}</Link><Link to="/terms">{tr('Terms & Conditions')}</Link><Link to="/privacy">{tr('Privacy Policy')}</Link><a href="mailto:hello@rekonekte.com">{tr('Contact Us')}</a></div>
-        <div className="foot-col foot-connect">
-          <h5>{tr('Connect With Us')}</h5>
-          <div className="socials">{['facebook', 'instagram', 'x', 'tiktok', 'youtube'].map((s) => <a key={s} href="#" aria-label={s} onClick={(e) => e.preventDefault()}><SocialIcon name={s} /></a>)}</div>
-          <Newsletter />
-        </div>
+        <nav className="mk-foot-links" aria-label="Footer">
+          <a href="mailto:hello@rekonekte.com">{tr('About Us')}</a>
+          <a href="mailto:hello@rekonekte.com">{tr('Contact')}</a>
+          <Link to="/privacy">{tr('Privacy Policy')}</Link>
+          <Link to="/terms">{tr('Terms of Service')}</Link>
+          <a href="mailto:help@rekonekte.com">{tr('Help & Support')}</a>
+        </nav>
       </div>
-      <div className="wrap foot-b">
-        <span>© 2026 Rekonekte.com. {tr('All rights reserved.')}</span>
-        <span className="foot-made">{tr('Made with')} <Icon name="heart" size={13} fill="currentColor" stroke={0} className="foot-heart" /> {tr('for the Haitian diaspora')}</span>
+      <div className="mk-foot-b">
+        <span>© 2026 Rekonekte. {tr('All rights reserved.')}</span>
         <LangSwitch compact />
       </div>
     </footer>

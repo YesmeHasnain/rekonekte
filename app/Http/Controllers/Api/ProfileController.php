@@ -50,6 +50,7 @@ class ProfileController extends Controller
             'gender' => ['nullable', 'in:woman,man,other'],
             'interested_in' => ['nullable', 'in:women,men,everyone'],
             'show_in_discover' => ['boolean'],
+            'culture' => ['nullable', 'in:haitian,caribbean,other'],
         ]);
 
         $profile = Profile::firstOrNew(['user_id' => $me->id]);
@@ -62,6 +63,9 @@ class ProfileController extends Controller
             'interests' => $data['interests'] ?? $profile->interests,
             'languages' => $data['langs'] ?? $profile->languages,
         ]);
+        if (isset($data['culture'])) {
+            $profile->culture = $data['culture'];
+        }
         if (isset($data['gender'])) {
             $profile->gender = $data['gender'];
         }

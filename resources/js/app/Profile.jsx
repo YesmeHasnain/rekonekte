@@ -46,7 +46,7 @@ export function EditProfile() {
   const { t } = useI18n()
   const { me, setMe, refreshMe, toast } = useStore()
   const nav = useNavigate()
-  const [f, setF] = useState({ name: me.name, job: me.job || '', city: me.city || 'Miami', lookingFor: me.lookingFor || 'Something serious', bio: me.bio || '', interests: me.interests || [], langs: me.langs || [], photo: me.photo, age: me.age, verified: me.verified })
+  const [f, setF] = useState({ name: me.name, culture: me.culture || 'haitian', job: me.job || '', city: me.city || 'Miami', lookingFor: me.lookingFor || 'Something serious', bio: me.bio || '', interests: me.interests || [], langs: me.langs || [], photo: me.photo, age: me.age, verified: me.verified })
   const [drag, setDrag] = useState(false)
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)
@@ -69,7 +69,7 @@ export function EditProfile() {
     e.preventDefault()
     setBusy(true)
     try {
-      await api('/profile', { method: 'PUT', body: { name: f.name, job: f.job, city: f.city, lookingFor: f.lookingFor, bio: f.bio, interests: f.interests, langs: f.langs } })
+      await api('/profile', { method: 'PUT', body: { name: f.name, culture: f.culture, job: f.job, city: f.city, lookingFor: f.lookingFor, bio: f.bio, interests: f.interests, langs: f.langs } })
       await refreshMe(); toast('Profile saved — mèsi!'); nav('/app/profile')
     } catch (err) { toast(err.message, 'err'); setBusy(false) }
   }
@@ -95,6 +95,7 @@ export function EditProfile() {
             </div>
             <div className="row2">
               <label className="field"><span>City</span><select value={f.city} onChange={set('city')}>{CITIES.map((c) => <option key={c}>{c}</option>)}</select></label>
+              <label className="field"><span>Culture</span><select value={f.culture ?? 'haitian'} onChange={set('culture')}><option value="haitian">Haitian</option><option value="caribbean">Caribbean</option><option value="other">Other cultures</option></select></label>
               <label className="field"><span>Looking for</span><select value={f.lookingFor} onChange={set('lookingFor')}><option>Something serious</option><option>Marriage</option><option>Friendship & community</option><option>Not sure yet</option></select></label>
             </div>
             <label className="field"><span>Bio <em>{f.bio.length}/300</em></span><textarea rows={4} maxLength={300} value={f.bio} onChange={set('bio')} /></label>

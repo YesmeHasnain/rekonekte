@@ -19,7 +19,7 @@ use Illuminate\Support\Str;
  */
 class PostController extends Controller
 {
-    private const CATS = ['housing', 'jobs', 'events', 'food', 'advice', 'business'];
+    private const CATS = ['housing', 'jobs', 'events', 'food', 'advice', 'business', 'services', 'travel', 'culture'];
 
     public function index(Request $request)
     {
@@ -160,7 +160,7 @@ class PostController extends Controller
         if (! $t) {
             return '';
         }
-        $mins = $t->diffInMinutes(now());
+        $mins = (int) abs($t->diffInMinutes(now()));
         if ($mins < 1) {
             return 'Just now';
         }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AdminEventController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\EventController;
+use App\Http\Controllers\Api\GroupController;
 use App\Http\Controllers\Api\InteractionController;
 use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\MessageController;
@@ -59,7 +60,13 @@ Route::middleware(['auth:sanctum', EnsureActiveMember::class])->group(function (
 
     // Events.
     Route::get('/events', [EventController::class, 'index']);
+    Route::get('/events/{event}', [EventController::class, 'show']);
     Route::post('/events/{event}/rsvp', [EventController::class, 'rsvp']);
+
+    // Community groups.
+    Route::get('/groups', [GroupController::class, 'index']);
+    Route::post('/groups', [GroupController::class, 'store']);
+    Route::post('/groups/{group}/join', [GroupController::class, 'join']);
 
     // My profile + account.
     Route::get('/profile', [ProfileController::class, 'show']);
@@ -85,6 +92,7 @@ Route::middleware(['auth:sanctum', EnsureActiveMember::class])->group(function (
         Route::post('/reports/{report}/resolve', [AdminController::class, 'resolveReport']);
         Route::get('/queue', [AdminController::class, 'queue']);
         Route::post('/posts/{post}/moderate', [AdminController::class, 'moderatePost']);
+        Route::delete('/groups/{group}', [GroupController::class, 'destroy']);
         Route::get('/events', [AdminEventController::class, 'index']);
         Route::post('/events', [AdminEventController::class, 'store']);
         Route::put('/events/{event}', [AdminEventController::class, 'update']);

@@ -9,7 +9,7 @@ class Profile extends Model
 {
     protected $fillable = [
         'user_id', 'display_name', 'gender', 'interested_in', 'city', 'country', 'hometown', 'job',
-        'looking_for', 'bio', 'languages', 'interests', 'is_verified', 'show_in_discover',
+        'looking_for', 'bio', 'languages', 'interests', 'is_verified', 'show_in_discover', 'culture',
     ];
 
     protected function casts(): array

@@ -57,12 +57,14 @@ export default function Admin() {
   const { data: repData, reload: reloadReports } = useApi('/admin/reports')
   const { data: qData, reload: reloadQueue } = useApi('/admin/queue')
   const { data: evData, reload: reloadEvents } = useApi('/admin/events')
+  const { data: grData, reload: reloadGroups } = useApi('/groups')
   const stats = statData?.stats ?? { totalMembers: 0, newThisWeek: 0, openReports: 0, queue: 0, signups: [] }
   const users = userData?.users ?? []
   const reports = repData?.reports ?? []
   const queue = qData?.queue ?? []
   const published = qData?.published ?? []
   const events = evData?.events ?? []
+  const groups = grData?.groups ?? []
 
   const [tab, setTab] = useState('reports')
   const [q, setQ] = useState('')
@@ -71,6 +73,7 @@ export default function Admin() {
   const [confirm, setConfirm] = useState(null)
   const [editing, setEditing] = useState(null)
   const [dropEvent, setDropEvent] = useState(null)
+  const [dropGroup, setDropGroup] = useState(null)
 
   const ulist = users.filter((u) => (status === 'all' || u.status === status) && ((u.name || '') + (u.email || '') + (u.city || '')).toLowerCase().includes(q.toLowerCase()))
   const maxBar = Math.max(1, ...stats.signups)
@@ -90,6 +93,11 @@ export default function Admin() {
 
   const removeEvent = async (e) => {
     try { await api('/admin/events/' + e.id, { method: 'DELETE' }); setDropEvent(null); toast('Event deleted', 'info'); reloadEvents() }
+    catch (err) { toast(err.message, 'err') }
+  }
+
+  const removeGroup = async (g) => {
+    try { await api('/admin/groups/' + g.id, { method: 'DELETE' }); setDropGroup(null); toast('Group deleted', 'info'); reloadGroups() }
     catch (err) { toast(err.message, 'err') }
   }
 
@@ -114,7 +122,7 @@ export default function Admin() {
       </div>
 
       <div className="atabs">
-        {[['reports', 'Reports', ' queue', reports.filter((r) => r.status === 'open').length], ['users', 'Users', '', users.length], ['moderation', 'Content', ' moderation', queue.length], ['events', 'Events', '', events.length]].map(([id, l, l2, n]) => (
+        {[['reports', 'Reports', ' queue', reports.filter((r) => r.status === 'open').length], ['users', 'Users', '', users.length], ['moderation', 'Content', ' moderation', queue.length], ['events', 'Events', '', events.length], ['groups', 'Groups', '', groups.length]].map(([id, l, l2, n]) => (
           <button key={id} className={tab === id ? 'on' : ''} onClick={() => setTab(id)}><span>{l}{l2 && <span className="hide-s">{l2}</span>}</span> <em>{n}</em></button>
         ))}
       </div>
@@ -205,6 +213,18 @@ export default function Admin() {
         </div>
       )}
 
+      {tab === 'groups' && (
+        <div className="reports">
+          {groups.map((g) => (
+            <div key={g.id} className="card report">
+              <Avatar src={g.image} size={44} />
+              <div className="report-b"><b>{g.name}</b><span className="muted small">{g.members} {g.members === 1 ? 'member' : 'members'}</span>{g.description && <p>{g.description}</p>}</div>
+              <button className="btn ghost sm danger-t" onClick={() => setDropGroup(g)}><Icon name="trash" size={14} /> Delete</button>
+            </div>
+          ))}
+        </div>
+      )}
+
       <Modal open={!!review} onClose={() => setReview(null)} title="Review report" width={540}>
         {review && (<>
           <div className="safety-who"><img src={photoUrl(review.target.photo)} alt="" /><div><b>{review.target.name}</b><span>{review.target.city}</span></div><span className={'sev ' + review.severity}>{review.severity}</span></div>
@@ -221,6 +241,10 @@ export default function Admin() {
       <Modal open={!!confirm} onClose={() => setConfirm(null)} title={`Suspend ${confirm?.name}?`}>
         <p className="muted">They will be logged out and hidden from Discover until reactivated.</p>
         <div className="modal-f"><button className="btn ghost" onClick={() => setConfirm(null)}>Cancel</button><button className="btn danger" onClick={() => { setUser(confirm, 'suspended'); setConfirm(null) }}>Suspend</button></div>
+      </Modal>
+      <Modal open={!!dropGroup} onClose={() => setDropGroup(null)} title={`Delete ${dropGroup?.name}?`}>
+        <p className="muted">Members will lose this group. This can't be undone.</p>
+        <div className="modal-f"><button className="btn ghost" onClick={() => setDropGroup(null)}>Keep group</button><button className="btn danger" onClick={() => removeGroup(dropGroup)}>Delete</button></div>
       </Modal>
       <Modal open={!!dropEvent} onClose={() => setDropEvent(null)} title={`Delete ${dropEvent?.title}?`}>
         <p className="muted">This also removes its RSVPs and can't be undone. To keep the record, edit the event and set it to Cancelled.</p>

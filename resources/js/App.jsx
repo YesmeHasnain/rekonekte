@@ -10,6 +10,9 @@ import MemberProfile from './app/MemberProfile.jsx'
 import Messages from './app/Messages.jsx'
 import Community from './app/Community.jsx'
 import Events from './app/Events.jsx'
+import EventDetail from './app/EventDetail.jsx'
+import Home from './app/Home.jsx'
+import DiscoverMore from './app/DiscoverMore.jsx'
 import { MyProfile, EditProfile } from './app/Profile.jsx'
 import Settings from './app/Settings.jsx'
 import Admin from './app/Admin.jsx'
@@ -24,7 +27,7 @@ function RequireMember({ children, admin }) {
   if (account === undefined) return <div className="gate-wait" aria-busy="true" />
   if (!account) return <Navigate to={'/login?next=' + encodeURIComponent(loc.pathname)} replace />
   if (!account.email_verified) return <Navigate to={'/verify?email=' + encodeURIComponent(account.email)} replace />
-  if (admin && !['admin', 'moderator'].includes(account.role)) return <Navigate to="/app/discover" replace />
+  if (admin && !['admin', 'moderator'].includes(account.role)) return <Navigate to="/app/home" replace />
   return children
 }
 
@@ -50,13 +53,16 @@ export default function App() {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/terms" element={<Terms />} />
         <Route path="/app" element={<RequireMember><AppLayout /></RequireMember>}>
-          <Route index element={<Navigate to="discover" replace />} />
+          <Route index element={<Navigate to="home" replace />} />
+          <Route path="home" element={<Home />} />
+          <Route path="more" element={<DiscoverMore />} />
           <Route path="discover" element={<Discover />} />
           <Route path="members/:id" element={<MemberProfile />} />
           <Route path="messages" element={<Messages />} />
           <Route path="messages/:threadId" element={<Messages />} />
           <Route path="community" element={<Community />} />
           <Route path="events" element={<Events />} />
+          <Route path="events/:id" element={<EventDetail />} />
           <Route path="profile" element={<MyProfile />} />
           <Route path="profile/edit" element={<EditProfile />} />
           <Route path="settings" element={<Settings />} />

@@ -61,6 +61,8 @@ trait PresentsMembers
             'bio' => $u->profile?->bio,
             'lookingFor' => $u->profile?->looking_for,
             'match' => $this->matchScore($u, $me),
+            'culture' => $u->profile?->culture ?? 'haitian',
+            'joined' => $u->created_at?->toIso8601String(),
         ];
     }
 }
