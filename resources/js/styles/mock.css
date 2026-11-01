@@ -80,14 +80,18 @@ body { font-family: var(--f-ui); background: var(--cream); color: var(--ink-mk);
 .mk-burger { display: none; }
 
 /* ---------- hero ---------- */
-.mk-hero { position: relative; aspect-ratio: 790 / 383; min-height: 480px; max-height: 88vh; width: 100%; overflow: hidden; background: #6b6a6d; }
-.mk-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 100% 30%; }
+.mk-hero { --h: max(500px, min(48.48vw, calc(100vh - 88px))); position: relative; height: var(--h); width: 100%; overflow: hidden; background: #6b6a6d; }
+.mk-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 100% 22%; }
 .mk-hero::before { content: ''; position: absolute; inset: 0; z-index: 1; background: linear-gradient(90deg, rgba(25, 18, 22, .42) 0%, rgba(25, 18, 22, .22) 34%, transparent 56%); }
-.mk-hero-in { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; height: 100%; padding: clamp(28px, 5.4vw, 90px) 0 0 clamp(16px, 4.8vw, 74px); }
-.mk-hero h1 { margin: clamp(10px, 1.7vw, 28px) 0 clamp(12px, 1.4vw, 22px); font: 400 clamp(36px, 5.15vw, 84px)/1.1 var(--f-head); letter-spacing: -.012em; color: #FFF8F0; text-shadow: 0 2px 16px rgba(20, 10, 14, .3); }
-.mk-hero p { margin: 0 0 clamp(16px, 1.9vw, 30px); max-width: 40ch; font: 400 clamp(15px, 1.62vw, 25px)/1.45 var(--f-ui); color: #FFF8F0; text-shadow: 0 1px 8px rgba(20, 10, 14, .45); }
-.mk-pills { display: flex; flex-wrap: wrap; gap: clamp(8px, 1vw, 16px); margin-top: clamp(16px, 2vw, 32px); }
-.mk-pills a { display: inline-flex; align-items: center; gap: 8px; height: clamp(38px, 3.85vw, 58px); padding: 0 clamp(14px, 1.75vw, 26px); border-radius: 99px; background: #FCF7F1; color: var(--ink-mk); font: 500 clamp(13px, 1.38vw, 20px) var(--f-ui); box-shadow: 0 6px 14px -8px rgba(30, 10, 16, .5); }
+.mk-hero-in { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; height: 100%; padding: calc(var(--h) * .105) 0 0 clamp(16px, 4.8vw, 96px); }
+.mk-hero-in > * { flex: none; }
+.mk-hero .mk-logo.big svg { width: calc(var(--h) * .118); height: auto; }
+.mk-hero .mk-logo.big b { font-size: calc(var(--h) * .108); }
+.mk-hero h1 { margin: calc(var(--h) * .035) 0 calc(var(--h) * .024); font: 400 calc(var(--h) * .107)/1.1 var(--f-head); letter-spacing: -.012em; color: #FFF8F0; text-shadow: 0 2px 16px rgba(20, 10, 14, .3); }
+.mk-hero p { margin: 0 0 calc(var(--h) * .036); max-width: 40ch; font: 400 calc(var(--h) * .036)/1.45 var(--f-ui); color: #FFF8F0; text-shadow: 0 1px 8px rgba(20, 10, 14, .45); }
+.mk-hero .mk-cta { height: calc(var(--h) * .1); padding: 0 calc(var(--h) * .058); gap: calc(var(--h) * .03); border-radius: 14px; font-size: calc(var(--h) * .036); }
+.mk-pills { display: flex; flex-wrap: wrap; gap: calc(var(--h) * .02); margin-top: calc(var(--h) * .036); }
+.mk-pills a { display: inline-flex; align-items: center; gap: 8px; height: calc(var(--h) * .08); padding: 0 calc(var(--h) * .036); border-radius: 99px; background: #FCF7F1; color: var(--ink-mk); font: 500 calc(var(--h) * .03) var(--f-ui); box-shadow: 0 6px 14px -8px rgba(30, 10, 16, .5); }
 .mk-pills a .ic { color: var(--wine); }
 
 /* ---------- features ---------- */
@@ -302,10 +306,15 @@ body { font-family: var(--f-ui); background: var(--cream); color: var(--ink-mk);
   .mk-nav .mk-logo svg { width: 32px; height: 29px; }
   .mk-nav .mk-logo b { font-size: 27px; }
   .mk-nav-r .hide-s { display: none; }
-  .mk-hero { aspect-ratio: auto; height: 86vh; min-height: 560px; }
+  .mk-hero { --h: max(520px, 72vh); }
   .mk-hero-img { object-position: 78% 30%; }
   .mk-hero::before { background: linear-gradient(180deg, rgba(25, 18, 22, .5) 0%, rgba(25, 18, 22, .08) 45%, rgba(25, 18, 22, .72) 100%); }
   .mk-hero-in { padding: 24px 16px; justify-content: flex-end; }
+  .mk-hero h1 { font-size: 36px; margin: 0 0 10px; }
+  .mk-hero p { font-size: 15px; margin-bottom: 14px; }
+  .mk-hero .mk-cta { height: 48px; padding: 0 22px; gap: 12px; font-size: 15px; }
+  .mk-pills { gap: 8px; margin-top: 14px; }
+  .mk-pills a { height: 38px; padding: 0 14px; font-size: 13px; }
   .mk-hero-in .mk-logo { display: none; }
   .mk-features { grid-template-columns: 1fr 1fr; row-gap: 22px; }
   .mk-features > div:nth-child(3) { border-left: 0; }
