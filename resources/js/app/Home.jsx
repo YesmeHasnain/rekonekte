@@ -10,6 +10,8 @@ export default function Home() {
   const { toast, me } = useStore()
   const nav = useNavigate()
   const { data, loading, reload } = useApi('/members')
+  const { data: evData } = useApi('/events')
+  const events = (evData?.events ?? []).slice(0, 3)
   const [gone, setGone] = useState(() => new Set())
   const [leaving, setLeaving] = useState('')
   const [pop, setPop] = useState(null)
@@ -36,7 +38,8 @@ export default function Home() {
   if (loading) return <div className="gate-wait" aria-busy="true" style={{ minHeight: 320 }} />
 
   return (
-    <div className="page mk-page mk-home">
+    <div className="page mk-page mk-homewrap">
+      <div className="mk-home">
       {m ? (<>
         <Link to={'/app/members/' + m.id} className={'mk-swipe ' + leaving} key={m.id}>
           <img src={photoUrl(m.photo)} alt={m.name} />
@@ -55,6 +58,23 @@ export default function Home() {
       </>) : (
         <div className="empty card"><Icon name="heart" size={32} /><h3>You've seen everyone for now</h3><p className="muted">New members join every week. Check back soon.</p><button className="btn primary" onClick={() => { setGone(new Set()); reload() }}>Refresh</button></div>
       )}
+      </div>
+      <aside className="mk-home-side">
+        <div className="mk-sec"><h2>Upcoming Events</h2><Link to="/app/events">View All</Link></div>
+        {events.map((e) => (
+          <Link key={e.id} to={'/app/events/' + e.id} className="mk-side-ev">
+            <img src={photoUrl(e.image)} alt="" loading="lazy" />
+            <span><b>{e.title}</b>{e.date}{e.city ? ' · ' + e.city : ''}</span>
+          </Link>
+        ))}
+        <div className="mk-sec"><h2>Explore</h2></div>
+        <div className="mk-side-links">
+          <Link to="/app/discover"><Icon name="search" size={18} /> Discover members</Link>
+          <Link to="/app/community"><Icon name="users" size={18} /> Community and groups</Link>
+          <Link to="/app/messages"><Icon name="chat" size={18} /> Messages</Link>
+          <Link to="/app/more"><Icon name="grid" size={18} /> Discover More</Link>
+        </div>
+      </aside>
       {pop && (
         <div className="match-pop" onClick={() => setPop(null)}>
           <div className="match-card">
