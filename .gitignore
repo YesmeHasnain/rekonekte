@@ -26,3 +26,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /database/*.sqlite
+
+# Member uploads stay on the server
+/public/uploads/*
+!/public/uploads/.htaccess
