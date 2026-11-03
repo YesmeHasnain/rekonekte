@@ -71,14 +71,11 @@ export function Icon({ name, size = 18, fill = 'none', stroke = 2, className = '
   )
 }
 
-const HEART_MARK = 'M24 41C10 31 4 23 4 15 4 8.5 9 4 15 4c4 0 7 2 9 5 2-3 5-5 9-5 6 0 11 4.5 11 11 0 8-6 16-20 26Z'
-const HEART_IN = 'M24 31c-7-5-10-9-10-13 0-3 2.300-5 5-5 2 0 4 1 5 3 1-2 3-3 5-3 2.700 0 5 2 5 5 0 4-3 8-10 13Z'
-
 export function Logo({ to = '/', light, big, stack }) {
+  const file = stack ? 'logo-full.png' : light || big ? 'logo-h-light.png' : 'logo-h.png'
   return (
-    <Link to={to} className={'mk-logo' + (light ? ' light' : '') + (big ? ' big' : '') + (stack ? ' stack' : '')} aria-label="Rekonekte home">
-      <svg viewBox="0 0 48 45" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinejoin="round" aria-hidden="true"><path d={HEART_MARK} /><path d={HEART_IN} strokeWidth="2.6" /></svg>
-      <b>Rekonekte</b>
+    <Link to={to} className={'mk-logo' + (big ? ' big' : '') + (stack ? ' tall' : '')} aria-label="Rekonekte home">
+      <img src={'/img/' + file} alt="Rekonekte" />
     </Link>
   )
 }

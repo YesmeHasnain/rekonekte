@@ -41,7 +41,7 @@ export default function Discover() {
   useEffect(() => { setLiked(new Set(members.filter((m) => m.liked).map((m) => m.id))) }, [data]) // eslint-disable-line
 
   const list = useMemo(() => members
-    .filter((m) => !passed.has(m.id))
+    .filter((m) => m.photo && !passed.has(m.id))
     .filter((m) => m.age >= f.age[0] && m.age <= f.age[1])
     .filter((m) => f.gender === 'all' || m.gender === f.gender)
     .filter((m) => f.city === 'all' || m.city === f.city)

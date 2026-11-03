@@ -172,7 +172,10 @@ class AuthController extends Controller
 
         $subject = $purpose === 'verify' ? 'Your Rekonekte verification code' : 'Reset your Rekonekte password';
         $line = $purpose === 'verify' ? 'Use this code to verify your email' : 'Use this code to choose a new password';
-        $body = "Bonjou {$user->name},\n\n{$line}:\n\n    {$code}\n\nIt expires in ".self::CODE_TTL_MINUTES." minutes. If you didn't ask for this, you can ignore this email.\n\nLanmou · Kominote · Lakay\nRekonekte";
+        $link = $purpose === 'reset'
+            ? "\n\nOr open this link to choose a new password:\n".rtrim(config('app.url'), '/').'/reset?'.http_build_query(['email' => $user->email, 'code' => $code])
+            : '';
+        $body = "Bonjou {$user->name},\n\n{$line}:\n\n    {$code}{$link}\n\nIt expires in ".self::CODE_TTL_MINUTES." minutes. If you didn't ask for this, you can ignore this email.\n\nLanmou · Kominote · Lakay\nRekonekte";
 
         try {
             Mail::raw($body, fn ($m) => $m->to($user->email)->subject($subject));

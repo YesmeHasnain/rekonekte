@@ -139,6 +139,7 @@ export default function AppLayout() {
           <div className="top-r">
             <button className="icon-btn desk-only" onClick={() => setPaletteOpen(true)} aria-label="Search"><Icon name="search" /></button>
             <span className="desk-only"><LangSwitch compact /></span>
+            <Link to="/app/messages" className="icon-btn mob-only" aria-label={t('side.messages')}><Icon name="chat" />{unread > 0 && <em className="badge-dot">{unread}</em>}</Link>
             <Notifications data={notifs} />
             <Link to="/app/settings" className="icon-btn desk-only" aria-label="Settings"><Icon name="settings" /></Link>
             <Link to="/app/profile" className="top-me"><Avatar src={me.photo} size={34} /></Link>

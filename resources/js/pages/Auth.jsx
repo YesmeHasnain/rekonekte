@@ -207,9 +207,10 @@ export function Verify() {
 
 export function Reset() {
   const { t } = useI18n()
-  const [step, setStep] = useState(1)
-  const [email, setEmail] = useState('')
-  const [code, setCode] = useState('')
+  const [sp] = useSearchParams()
+  const [step, setStep] = useState(sp.get('email') && sp.get('code') ? 2 : 1)
+  const [email, setEmail] = useState(sp.get('email') || '')
+  const [code, setCode] = useState(sp.get('code') || '')
   const [p1, setP1] = useState('')
   const [p2, setP2] = useState('')
   const [err, setErr] = useState('')

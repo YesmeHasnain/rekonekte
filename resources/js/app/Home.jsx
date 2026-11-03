@@ -15,7 +15,7 @@ export default function Home() {
   const [gone, setGone] = useState(() => new Set())
   const [leaving, setLeaving] = useState('')
   const [pop, setPop] = useState(null)
-  const members = (data?.data ?? []).filter((m) => !m.liked && !gone.has(m.id))
+  const members = (data?.data ?? []).filter((m) => m.photo && !m.liked && !gone.has(m.id))
   const m = members[0]
 
   const next = (dir) => {

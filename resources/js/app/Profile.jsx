@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useI18n } from '../i18n.jsx'
 import { useStore } from '../store.jsx'
@@ -46,7 +46,9 @@ export function EditProfile() {
   const { t } = useI18n()
   const { me, setMe, refreshMe, toast } = useStore()
   const nav = useNavigate()
-  const [f, setF] = useState({ name: me.name, culture: me.culture || 'haitian', job: me.job || '', city: me.city || 'Miami', lookingFor: me.lookingFor || 'Something serious', bio: me.bio || '', interests: me.interests || [], langs: me.langs || [], photo: me.photo, age: me.age, verified: me.verified })
+  const fromMe = () => ({ name: me.name, culture: me.culture || 'haitian', job: me.job || '', city: me.city || 'Miami', lookingFor: me.lookingFor || 'Something serious', bio: me.bio || '', interests: me.interests || [], langs: me.langs || [], photo: me.photo, age: me.age, verified: me.verified })
+  const [f, setF] = useState(fromMe)
+  useEffect(() => { if (me.id) setF(fromMe()) }, [me.id]) // eslint-disable-line
   const [drag, setDrag] = useState(false)
   const [err, setErr] = useState('')
   const [busy, setBusy] = useState(false)

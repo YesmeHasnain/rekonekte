@@ -119,6 +119,21 @@ class MvpTest extends TestCase
         $this->postJson('/api/login', ['email' => 'b@example.com', 'password' => 'new-pass-1'])->assertOk();
     }
 
+    public function test_reset_email_contains_a_link_that_resets_the_password(): void
+    {
+        config(['app.url' => 'https://rekonekte.test']);
+        $this->member(['email' => 'link@example.com', 'password' => 'old-pass-1']);
+        $this->postJson('/api/password/forgot', ['email' => 'link@example.com'])->assertOk();
+
+        $body = app('mail.manager')->mailer()->getSymfonyTransport()->messages()->last()->getOriginalMessage()->getTextBody();
+        $this->assertSame(1, preg_match('#https://rekonekte\.test/reset\?(\S+)#', $body, $m));
+        parse_str($m[1], $q);
+        $this->assertSame('link@example.com', $q['email']);
+
+        $this->postJson('/api/password/reset', ['email' => $q['email'], 'code' => $q['code'], 'password' => 'new-pass-1', 'password_confirmation' => 'new-pass-1'])->assertOk();
+        $this->postJson('/api/login', ['email' => 'link@example.com', 'password' => 'new-pass-1'])->assertOk();
+    }
+
     public function test_forgot_password_does_not_reveal_whether_an_account_exists(): void
     {
         $this->postJson('/api/password/forgot', ['email' => 'nobody@example.com'])->assertOk()->assertJson(['sent' => true]);
