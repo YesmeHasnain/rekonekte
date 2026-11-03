@@ -135,7 +135,7 @@ class AdminController extends Controller
     {
         $this->gate($request);
 
-        $query = fn (string $status, int $limit) => Post::where('status', $status)->with(['user.profile', 'user.photos'])
+        $query = fn (string $status, int $limit) => Post::where('status', $status)->whereHas('user')->with(['user.profile', 'user.photos'])
             ->orderByDesc('created_at')->limit($limit)->get();
 
         return [

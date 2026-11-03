@@ -52,6 +52,9 @@ return new class extends Migration
     {
         Schema::dropIfExists('community_group_user');
         Schema::dropIfExists('community_groups');
-        Schema::table('profiles', fn (Blueprint $table) => $table->dropColumn('culture'));
+        Schema::table('profiles', function (Blueprint $table) {
+            $table->dropIndex(['culture']);
+            $table->dropColumn('culture');
+        });
     }
 };

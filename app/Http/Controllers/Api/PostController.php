@@ -29,6 +29,7 @@ class PostController extends Controller
         $posts = Post::query()
             ->with(['user.profile', 'user.photos'])
             ->withCount(['likes', 'comments'])
+            ->whereHas('user')
             ->whereNotIn('user_id', $me->hiddenUserIds())
             ->where(fn ($q) => $q->where('status', 'approved')->orWhere('user_id', $me->id))
             ->when(in_array($cat, self::CATS, true), fn ($q) => $q->where('category', $cat))
@@ -95,6 +96,7 @@ class PostController extends Controller
         $this->abortUnlessVisible($post, $me);
 
         return ['comments' => $post->comments()->with('user.profile', 'user.photos')
+            ->whereHas('user')
             ->whereNotIn('user_id', $me->hiddenUserIds())
             ->orderBy('created_at')->get()->map(fn (Comment $c) => $this->presentComment($c))->values()];
     }

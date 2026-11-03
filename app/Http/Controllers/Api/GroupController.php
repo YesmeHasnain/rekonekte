@@ -54,6 +54,7 @@ class GroupController extends Controller
     public function destroy(Request $request, Group $group)
     {
         abort_unless($request->user()->isAdmin(), 403);
+        $group->members()->detach();
         $group->delete();
 
         return response()->noContent();

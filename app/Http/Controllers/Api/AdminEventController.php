@@ -55,6 +55,7 @@ class AdminEventController extends Controller
     public function destroy(Request $request, Event $event)
     {
         $this->gate($request);
+        $event->attendees()->detach();
         $event->delete();
 
         return response()->noContent();
