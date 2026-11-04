@@ -51,7 +51,8 @@ Check the site afterwards at https://rekonekte.com/api/health.
 
 ## Before public launch
 
-- Change or remove the shared demo accounts. They all use the password `password`, including `admin@rekonekte.com`.
+- Change or remove the shared demo member accounts. They use a shared test password.
+- Change the admin password again once handover is complete.
 - Remove the sample members, posts and events if you do not want them public.
 - Replace the placeholder text on the Privacy Policy and Terms of Service pages with your final text in `resources/js/pages/Legal.jsx`.
 - Approve the French, Haitian Creole and Spanish text in `resources/js/phrases.js` and `resources/js/i18n.jsx`.

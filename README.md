@@ -77,7 +77,7 @@ php artisan serve               # http://127.0.0.1:8000
 
 Run the automated tests with `php artisan test`. They use an in-memory SQLite database and cover the agreed MVP features through the API (`tests/Feature/MvpTest.php`).
 
-Demo accounts, all with the password `password`:
+Demo accounts for your local copy, created by the seeder, all with the password `password`:
 - **Admin:** `admin@rekonekte.com`
 - **Members:** `daniela@example.com`, `nadia@example.com`, `jean@example.com` and others
 
